@@ -3,10 +3,12 @@ spring:
     name: personal-finance-manager
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/pfm
+    url: jdbc:postgresql://localhost:5432/pfm?TimeZone=Asia/Ho_Chi_Minh&ApplicationName=pfm
     username: pfm_user
     password: pfm_password
     driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET TIME ZONE 'Asia/Ho_Chi_Minh'
 
   jpa:
     hibernate:
@@ -16,6 +18,8 @@ spring:
       hibernate:
         dialect: org.hibernate.dialect.PostgreSQLDialect
         format_sql: true
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
 
   flyway:
     enabled: true
