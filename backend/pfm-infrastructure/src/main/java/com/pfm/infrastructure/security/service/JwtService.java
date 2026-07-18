@@ -8,6 +8,7 @@ import io.jsonwebtoken.security.Keys;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.nio.charset.StandardCharsets;
 import java.security.Key;
 import java.util.Date;
 
@@ -79,7 +80,27 @@ public class JwtService implements TokenService {
     }
 
     private Key getSigningKey() {
-        byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
-        return Keys.hmacShaKeyFor(keyBytes);
+        // Prefer treating secret as base64/base64url if possible; otherwise derive a 64-byte key
+        // by hashing the provided secret with SHA-512 to ensure adequate length for HS512.
+        try {
+            byte[] keyBytes = Decoders.BASE64.decode(jwtSecret);
+            return Keys.hmacShaKeyFor(keyBytes);
+        } catch (io.jsonwebtoken.io.DecodingException ex) {
+            try {
+                byte[] keyBytes = Decoders.BASE64URL.decode(jwtSecret);
+                return Keys.hmacShaKeyFor(keyBytes);
+            } catch (io.jsonwebtoken.io.DecodingException ex2) {
+                // Fallback: derive 64-byte key using SHA-512 of the secret string
+                try {
+                    java.security.MessageDigest md = java.security.MessageDigest.getInstance("SHA-512");
+                    byte[] digest = md.digest(jwtSecret.getBytes(StandardCharsets.UTF_8));
+                    return Keys.hmacShaKeyFor(digest);
+                } catch (java.security.NoSuchAlgorithmException nae) {
+                    // As a last resort, use UTF-8 bytes (may throw if too short)
+                    byte[] keyBytes = jwtSecret.getBytes(StandardCharsets.UTF_8);
+                    return Keys.hmacShaKeyFor(keyBytes);
+                }
+            }
+        }
     }
 }

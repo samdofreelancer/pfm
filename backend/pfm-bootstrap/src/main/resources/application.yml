@@ -33,7 +33,8 @@ server:
 
 app:
   jwt:
-    secret: ${JWT_SECRET:default-key-change-in-production-please-use-env-variable}
+    # Development-only default: a valid Base64 string that decodes to >=64 bytes
+    secret: ${JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
     expiration-ms: 900000  # 15 minutes
     refresh-expiration-ms: 604800000  # 7 days
   cors:

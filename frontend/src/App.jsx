@@ -1,15 +1,38 @@
 import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useNavigate } from 'react-router-dom';
+import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
 import AuthPage from './components/auth/AuthPage';
 import { authApi, clearAccessToken, setAccessToken } from './services/api';
 
-const Dashboard = () => {
+const Dashboard = ({ onLogout }) => {
   const navigate = useNavigate();
 
   const handleLogout = async () => {
-    await authApi.logout();
-    clearAccessToken();
-    navigate('/login');
+      try {
+        // debug log: user initiated logout
+        // eslint-disable-next-line no-console
+        console.log('[app] logout: calling authApi.logout()');
+
+        await authApi.logout();
+
+        // eslint-disable-next-line no-console
+        console.log('[app] logout: logout API success');
+
+        clearAccessToken();
+        // inform parent app that user is logged out
+        try {
+          onLogout?.();
+        } catch (e) {}
+        navigate('/login');
+      } catch (err) {
+        // eslint-disable-next-line no-console
+        console.log('[app] logout: logout API failed', err);
+        // still clear local token and redirect
+        clearAccessToken();
+        try {
+          onLogout?.();
+        } catch (e) {}
+        navigate('/login');
+      }
   };
 
   return (
@@ -48,8 +71,14 @@ function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
 
+  const location = useLocation();
+
   useEffect(() => {
     const initializeAuth = async () => {
+      if (process.env.NODE_ENV !== 'production') {
+        // eslint-disable-next-line no-console
+        console.debug('[app] initializeAuth: starting refresh');
+      }
       try {
         const response = await authApi.refresh();
         setAccessToken(response.data.accessToken);
@@ -62,8 +91,19 @@ function App() {
       }
     };
 
-    initializeAuth();
-  }, []);
+    // Run initializeAuth once on mount. This avoids triggering refresh
+    // on every route change (for example during logout navigation).
+    if (location.pathname === '/login') {
+      // If the user is already on login page, skip refresh.
+      // eslint-disable-next-line no-console
+      console.log('[app] initializeAuth: on /login at mount, skipping refresh');
+      setIsLoading(false);
+    } else {
+      // eslint-disable-next-line no-console
+      console.log('[app] initializeAuth: running refresh at mount');
+      initializeAuth();
+    }
+  }, []); // run once on mount
 
   return (
     <Routes>
@@ -81,7 +121,7 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
-            <Dashboard />
+            <Dashboard onLogout={() => setIsAuthenticated(false)} />
           </ProtectedRoute>
         }
       />
