@@ -13,11 +13,13 @@ cd /d "%SCRIPT_DIR%"
 :: Parse arguments
 set START_BACKEND=1
 set START_FRONTEND=1
+set USE_DOCKER=0
 
 if "%1"=="--backend-only" set START_FRONTEND=0
 if "%1"=="--frontend-only" set START_BACKEND=0
+if "%1"=="--docker" set USE_DOCKER=1
 if "%1"=="--help" (
-    echo Usage: start.bat [--backend-only ^| --frontend-only ^| --help]
+    echo Usage: start.bat [--backend-only ^| --frontend-only ^| --docker ^| --help]
     exit /b 0
 )
 
@@ -92,21 +94,27 @@ if %START_BACKEND%==1 (
     echo ═══════════════════════════════════════
     echo.
 
-    cd backend
+    if %USE_DOCKER%==1 (
+        echo → Building and starting backend container...
+        docker-compose up -d --build backend
+        echo ✓ Backend container started.
+    ) else (
+        cd backend
 
-    echo → Building all modules (install)...
-    call mvn install -DskipTests -q
-    if errorlevel 1 (
-        echo ✗ Backend build failed.
-        pause
-        exit /b 1
+        echo → Building all modules (install)...
+        call mvn install -DskipTests -q
+        if errorlevel 1 (
+            echo ✗ Backend build failed.
+            pause
+            exit /b 1
+        )
+        echo ✓ Backend modules built ^& installed.
+
+        echo → Starting Spring Boot on http://localhost:8080
+        start "PFM-Backend" cmd /c "mvn spring-boot:run -pl pfm-bootstrap"
+
+        cd /d "%SCRIPT_DIR%"
     )
-    echo ✓ Backend modules built ^& installed.
-
-    echo → Starting Spring Boot on http://localhost:8080
-    start "PFM-Backend" cmd /c "mvn spring-boot:run -pl pfm-bootstrap"
-
-    cd /d "%SCRIPT_DIR%"
 )
 
 :: ===========================
@@ -115,27 +123,33 @@ if %START_BACKEND%==1 (
 if %START_FRONTEND%==1 (
     echo.
     echo ═══════════════════════════════════════
-    echo   Starting Frontend (Vite + React)...
+    echo   Starting Frontend...
     echo ═══════════════════════════════════════
     echo.
 
-    cd frontend
+    if %USE_DOCKER%==1 (
+        echo → Building and starting frontend container...
+        docker-compose up -d --build frontend
+        echo ✓ Frontend container started.
+    ) else (
+        cd frontend
 
-    if not exist "node_modules" (
-        echo → Installing frontend dependencies...
-        call npm install
-        if errorlevel 1 (
-            echo ✗ npm install failed.
-            pause
-            exit /b 1
+        if not exist "node_modules" (
+            echo → Installing frontend dependencies...
+            call npm install
+            if errorlevel 1 (
+                echo ✗ npm install failed.
+                pause
+                exit /b 1
+            )
+            echo ✓ Dependencies installed.
         )
-        echo ✓ Dependencies installed.
+
+        echo → Starting Vite on http://localhost:3000
+        start "PFM-Frontend" cmd /c "npm run dev"
+
+        cd /d "%SCRIPT_DIR%"
     )
-
-    echo → Starting Vite on http://localhost:3000
-    start "PFM-Frontend" cmd /c "npm run dev"
-
-    cd /d "%SCRIPT_DIR%"
 )
 
 :: ===========================

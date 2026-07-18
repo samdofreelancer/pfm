@@ -26,13 +26,15 @@ cd "$SCRIPT_DIR"
 # Parse args
 START_BACKEND=true
 START_FRONTEND=true
+USE_DOCKER=false
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --backend-only) START_FRONTEND=false ;;
         --frontend-only) START_BACKEND=false ;;
+        --docker) USE_DOCKER=true ;;
         --help)
-            echo "Usage: $0 [--backend-only | --frontend-only | --help]"
+            echo "Usage: $0 [--backend-only | --frontend-only | --docker | --help]"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -128,48 +130,72 @@ fi
 # BACKEND
 # ===========================
 if [ "$START_BACKEND" = true ]; then
-    echo ""
-    echo -e "${CYAN}══════════════════════════════════════${NC}"
-    echo -e "${CYAN}  Building & Starting Backend...     ${NC}"
-    echo -e "${CYAN}══════════════════════════════════════${NC}"
-    echo ""
+    if [ "$USE_DOCKER" = true ]; then
+        echo ""
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo -e "${CYAN}  Starting Backend (Docker)...       ${NC}"
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo ""
 
-    cd backend
+        echo -e "${YELLOW}→ Building and starting backend container...${NC}"
+        $DOCKER_COMPOSE up -d --build backend
+        echo -e "${GREEN}✓ Backend container started.${NC}"
+    else
+        echo ""
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo -e "${CYAN}  Building & Starting Backend...     ${NC}"
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo ""
 
-    echo -e "${YELLOW}→ Building all modules (install)...${NC}"
-    mvn install -DskipTests -q
-    echo -e "${GREEN}✓ Backend modules built & installed.${NC}"
+        cd backend
 
-    echo -e "${GREEN}→ Starting Spring Boot on http://localhost:8080${NC}"
-    mvn spring-boot:run -pl pfm-bootstrap &
-    BACKEND_PID=$!
+        echo -e "${YELLOW}→ Building all modules (install)...${NC}"
+        mvn install -DskipTests -q
+        echo -e "${GREEN}✓ Backend modules built & installed.${NC}"
 
-    cd "$SCRIPT_DIR"
+        echo -e "${GREEN}→ Starting Spring Boot on http://localhost:8080${NC}"
+        mvn spring-boot:run -pl pfm-bootstrap &
+        BACKEND_PID=$!
+
+        cd "$SCRIPT_DIR"
+    fi
 fi
 
 # ===========================
 # FRONTEND
 # ===========================
 if [ "$START_FRONTEND" = true ]; then
-    echo ""
-    echo -e "${CYAN}══════════════════════════════════════${NC}"
-    echo -e "${CYAN}  Starting Frontend (Vite + React)...${NC}"
-    echo -e "${CYAN}══════════════════════════════════════${NC}"
-    echo ""
+    if [ "$USE_DOCKER" = true ]; then
+        echo ""
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo -e "${CYAN}  Starting Frontend (Docker)...       ${NC}"
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo ""
 
-    cd frontend
+        echo -e "${YELLOW}→ Building and starting frontend container...${NC}"
+        $DOCKER_COMPOSE up -d --build frontend
+        echo -e "${GREEN}✓ Frontend container started.${NC}"
+    else
+        echo ""
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo -e "${CYAN}  Starting Frontend (Vite + React)...${NC}"
+        echo -e "${CYAN}══════════════════════════════════════${NC}"
+        echo ""
 
-    if [ ! -d "node_modules" ]; then
-        echo -e "${YELLOW}→ Installing frontend dependencies...${NC}"
-        npm install
-        echo -e "${GREEN}✓ Dependencies installed.${NC}"
+        cd frontend
+
+        if [ ! -d "node_modules" ]; then
+            echo -e "${YELLOW}→ Installing frontend dependencies...${NC}"
+            npm install
+            echo -e "${GREEN}✓ Dependencies installed.${NC}"
+        fi
+
+        echo -e "${GREEN}→ Starting Vite on http://localhost:3000${NC}"
+        npm run dev &
+        FRONTEND_PID=$!
+
+        cd "$SCRIPT_DIR"
     fi
-
-    echo -e "${GREEN}→ Starting Vite on http://localhost:3000${NC}"
-    npm run dev &
-    FRONTEND_PID=$!
-
-    cd "$SCRIPT_DIR"
 fi
 
 # ===========================
@@ -194,17 +220,20 @@ echo -e "${YELLOW}Press Ctrl+C to stop all services.${NC}"
 cleanup() {
     echo ""
     echo -e "${YELLOW}Shutting down...${NC}"
-    if [ -n "$BACKEND_PID" ]; then
-        kill "$BACKEND_PID" 2>/dev/null
-        echo -e "${GREEN}✓ Backend stopped.${NC}"
+    if [ "$USE_DOCKER" = true ]; then
+        echo -e "${YELLOW}Stopping Docker containers...${NC}"
+        $DOCKER_COMPOSE down
+        echo -e "${GREEN}✓ Docker containers stopped.${NC}"
+    else
+        if [ -n "$BACKEND_PID" ]; then
+            kill "$BACKEND_PID" 2>/dev/null
+            echo -e "${GREEN}✓ Backend stopped.${NC}"
+        fi
+        if [ -n "$FRONTEND_PID" ]; then
+            kill "$FRONTEND_PID" 2>/dev/null
+            echo -e "${GREEN}✓ Frontend stopped.${NC}"
+        fi
     fi
-    if [ -n "$FRONTEND_PID" ]; then
-        kill "$FRONTEND_PID" 2>/dev/null
-        echo -e "${GREEN}✓ Frontend stopped.${NC}"
-    fi
-    echo -e "${YELLOW}Stopping Docker containers...${NC}"
-    $DOCKER_COMPOSE down
-    echo -e "${GREEN}✓ Docker containers stopped.${NC}"
     echo -e "${CYAN}Goodbye!${NC}"
     exit 0
 }

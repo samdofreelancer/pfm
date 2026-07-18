@@ -1,0 +1,20 @@
+spring:
+  datasource:
+    url: jdbc:postgresql://postgres:5432/pfm?TimeZone=Asia/Ho_Chi_Minh&ApplicationName=pfm
+    username: pfm_user
+    password: pfm_password
+
+  jpa:
+    properties:
+      hibernate:
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+app:
+  cors:
+    allowed-origins: http://localhost:3000,http://pfm-frontend:3000
