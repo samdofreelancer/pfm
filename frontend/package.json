@@ -2,6 +2,7 @@
   "name": "pfm-frontend",
   "version": "1.0.0",
   "private": true,
+  "type": "module",
   "description": "Personal Finance Manager - Frontend",
   "scripts": {
     "dev": "vite",

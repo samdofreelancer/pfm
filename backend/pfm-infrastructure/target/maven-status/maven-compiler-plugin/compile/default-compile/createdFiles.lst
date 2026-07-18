@@ -1,0 +1,10 @@
+com\pfm\infrastructure\persistence\jpa\entity\JpaUserEntity$JpaUserEntityBuilder.class
+com\pfm\infrastructure\persistence\jpa\repository\JpaUserRepository.class
+com\pfm\infrastructure\persistence\repository\UserRepositoryImpl.class
+com\pfm\infrastructure\persistence\jpa\mapper\UserPersistenceMapper.class
+com\pfm\infrastructure\security\config\SecurityConfig.class
+com\pfm\infrastructure\security\filter\JwtAuthenticationFilter.class
+com\pfm\infrastructure\security\service\JwtService.class
+com\pfm\infrastructure\persistence\jpa\entity\JpaUserEntity.class
+com\pfm\infrastructure\config\DomainBeanConfig.class
+com\pfm\infrastructure\security\service\UserDetailsServiceImpl.class

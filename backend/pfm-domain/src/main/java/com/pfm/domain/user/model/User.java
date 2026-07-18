@@ -1,6 +1,7 @@
 package com.pfm.domain.user.model;
 
 import com.pfm.domain.shared.event.DomainEvent;
+import com.pfm.domain.user.event.UserRegisteredEvent;
 import lombok.Getter;
 
 import java.time.LocalDateTime;
@@ -35,7 +36,7 @@ public class User {
     public static User create(Email email, String encodedPassword, String fullName) {
         UserId userId = UserId.generate();
         User user = new User(userId, email, encodedPassword, fullName);
-        user.registerEvent(new UserRegisteredEvent(userId, email.value));
+        user.registerEvent(new UserRegisteredEvent(userId.getValue(), email.getValue()));
         return user;
     }
 

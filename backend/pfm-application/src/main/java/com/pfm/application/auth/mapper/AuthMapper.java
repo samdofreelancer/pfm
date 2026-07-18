@@ -2,22 +2,12 @@ package com.pfm.application.auth.mapper;
 
 import com.pfm.application.auth.dto.AuthResponse;
 import com.pfm.domain.user.model.User;
-import org.mapstruct.Mapper;
-import org.mapstruct.Mapping;
+import org.springframework.stereotype.Component;
 
-@Mapper(componentModel = "spring")
-public interface AuthMapper {
+@Component
+public class AuthMapper {
 
-    @Mapping(target = "user.id", source = "user.id.value")
-    @Mapping(target = "user.email", source = "user.email.value")
-    @Mapping(target = "user.fullName", source = "user.fullName")
-    @Mapping(target = "user.avatarUrl", source = "user.avatarUrl")
-    @Mapping(target = "accessToken", ignore = true)
-    @Mapping(target = "refreshToken", ignore = true)
-    @Mapping(target = "expiresIn", ignore = true)
-    AuthResponse toAuthResponse(User user);
-
-    default AuthResponse toAuthResponseWithTokens(User user, String accessToken, String refreshToken, Long expiresIn) {
+    public AuthResponse toAuthResponseWithTokens(User user, String accessToken, String refreshToken, Long expiresIn) {
         AuthResponse.AuthResponseBuilder builder = AuthResponse.builder()
             .accessToken(accessToken)
             .refreshToken(refreshToken)

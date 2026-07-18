@@ -1,22 +1,28 @@
 package com.pfm.application.auth.dto;
 
+import lombok.AllArgsConstructor;
 import lombok.Builder;
-import lombok.Value;
+import lombok.Data;
+import lombok.NoArgsConstructor;
 
-@Value
+@Data
 @Builder
+@NoArgsConstructor
+@AllArgsConstructor
 public class AuthResponse {
-    String accessToken;
-    String refreshToken;
-    Long expiresIn;
-    UserInfo user;
+    private String accessToken;
+    private String refreshToken;
+    private Long expiresIn;
+    private UserInfo user;
 
-    @Value
+    @Data
     @Builder
+    @NoArgsConstructor
+    @AllArgsConstructor
     public static class UserInfo {
-        String id;
-        String email;
-        String fullName;
-        String avatarUrl;
+        private String id;
+        private String email;
+        private String fullName;
+        private String avatarUrl;
     }
 }
