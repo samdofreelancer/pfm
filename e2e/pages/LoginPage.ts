@@ -6,23 +6,21 @@ export class LoginPage {
   readonly passwordInput: Locator;
   readonly fullNameInput: Locator;
   readonly submitButton: Locator;
-  readonly signUpTabButton: Locator;
-  readonly signUpToggleButton: Locator;
+  readonly loginTabButton: Locator;
+  readonly registerTabButton: Locator;
   readonly errorMessage: Locator;
   readonly welcomeHeading: Locator;
 
   constructor(page: Page) {
     this.page = page;
-    this.emailInput = page.locator('input[type="email"]');
-    this.passwordInput = page.locator('input[type="password"]');
-    this.fullNameInput = page.locator('input[name="fullName"]');
-    // Submit button - works for both Sign In and Create Account
-    this.submitButton = page.locator('form').getByRole('button', { name: /Sign In|Create Account/ });
-    // Tab button for switching to Sign Up mode (first one in the tab group)
-    this.signUpTabButton = page.locator('.flex.bg-gray-100.rounded-lg').getByRole('button', { name: 'Sign Up' });
-    // Toggle button for switching to Sign Up mode (at the bottom)
-    this.signUpToggleButton = page.locator('p').getByRole('button', { name: 'Sign up' });
-    this.errorMessage = page.locator('.bg-red-50');
+    // Use data-testid for stable locators
+    this.emailInput = page.getByTestId('email-input');
+    this.passwordInput = page.getByTestId('password-input');
+    this.fullNameInput = page.getByTestId('fullName-input');
+    this.submitButton = page.getByTestId('submit-button');
+    this.loginTabButton = page.getByTestId('login-tab');
+    this.registerTabButton = page.getByTestId('register-tab');
+    this.errorMessage = page.getByTestId('error-message');
     this.welcomeHeading = page.getByRole('heading', { name: 'Welcome Back' });
   }
 
@@ -38,7 +36,7 @@ export class LoginPage {
 
   async register(fullName: string, email: string, password: string) {
     // Switch to Sign Up tab
-    await this.signUpTabButton.click();
+    await this.registerTabButton.click();
     // Fill registration form
     await this.fullNameInput.fill(fullName);
     await this.emailInput.fill(email);
