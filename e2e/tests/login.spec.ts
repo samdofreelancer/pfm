@@ -150,4 +150,42 @@ test.describe('Authentication', () => {
     // Verify redirect to login page
     await expect(loginPage.welcomeHeading).toBeVisible();
   });
+
+  test('should show error message with short password on register', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+
+    // Navigate to login page
+    await loginPage.goto();
+    await expect(loginPage.welcomeHeading).toBeVisible();
+
+    // Switch to register tab
+    await loginPage.registerTabButton.click();
+
+    // Try to register with short password
+    await loginPage.register('Test User', 'test@example.com', '123');
+
+    // Verify error message is displayed
+    await expect(loginPage.errorMessage).toBeVisible();
+    const errorText = await loginPage.getErrorMessage();
+    expect(errorText).toContain('6 characters');
+  });
+
+  test('should show error message with empty full name on register', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+
+    // Navigate to login page
+    await loginPage.goto();
+    await expect(loginPage.welcomeHeading).toBeVisible();
+
+    // Switch to register tab
+    await loginPage.registerTabButton.click();
+
+    // Try to register with empty full name
+    await loginPage.register('', 'test@example.com', 'password123');
+
+    // Verify error message is displayed
+    await expect(loginPage.errorMessage).toBeVisible();
+    const errorText = await loginPage.getErrorMessage();
+    expect(errorText).toContain('Full name');
+  });
 });
