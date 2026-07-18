@@ -61,12 +61,14 @@ api.interceptors.response.use(
 
     // Don't attempt to refresh when the failed request is the refresh endpoint
     // or when caller explicitly asked to skip refresh handling (e.g. logout)
+    // or when the request is to auth endpoints (login, register) that may return 401 for invalid credentials
     const requestUrl = originalRequest.url || '';
     const skipRefresh = originalRequest.headers && (originalRequest.headers['x-skip-refresh'] || originalRequest.headers['X-Skip-Refresh']);
-    if (requestUrl.includes('/auth/refresh') || skipRefresh) {
+    const isAuthEndpoint = requestUrl.includes('/auth/login') || requestUrl.includes('/auth/register');
+    if (requestUrl.includes('/auth/refresh') || skipRefresh || isAuthEndpoint) {
       try {
         // eslint-disable-next-line no-console
-        console.log('[api] skipping refresh for', originalRequest.url, 'skipRefresh=', !!skipRefresh);
+        console.log('[api] skipping refresh for', originalRequest.url, 'skipRefresh=', !!skipRefresh, 'isAuthEndpoint=', isAuthEndpoint);
       } catch (e) {}
       return Promise.reject(error);
     }
