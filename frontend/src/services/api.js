@@ -2,17 +2,29 @@ import axios from 'axios';
 
 const API_BASE_URL = '/api/v1';
 
+let accessToken = null;
+
+export const setAccessToken = (token) => {
+  accessToken = token;
+};
+
+export const clearAccessToken = () => {
+  accessToken = null;
+};
+
+export const getAccessToken = () => accessToken;
+
 const api = axios.create({
   baseURL: API_BASE_URL,
   headers: {
     'Content-Type': 'application/json',
   },
+  withCredentials: true,
 });
 
-// Request interceptor to attach JWT token
 api.interceptors.request.use(
   (config) => {
-    const token = localStorage.getItem('accessToken');
+    const token = getAccessToken();
     if (token) {
       config.headers.Authorization = `Bearer ${token}`;
     }
@@ -31,21 +43,18 @@ api.interceptors.response.use(
       originalRequest._retry = true;
 
       try {
-        const refreshToken = localStorage.getItem('refreshToken');
-        if (refreshToken) {
-          const response = await axios.post(`${API_BASE_URL}/auth/refresh`, {
-            refreshToken,
-          });
-          const { accessToken, refreshToken: newRefreshToken } = response.data;
-          localStorage.setItem('accessToken', accessToken);
-          localStorage.setItem('refreshToken', newRefreshToken);
-          originalRequest.headers.Authorization = `Bearer ${accessToken}`;
-          return api(originalRequest);
-        }
+        const response = await axios.post(
+          `${API_BASE_URL}/auth/refresh`,
+          {},
+          { withCredentials: true }
+        );
+
+        const { accessToken: newAccessToken } = response.data;
+        setAccessToken(newAccessToken);
+        originalRequest.headers.Authorization = `Bearer ${newAccessToken}`;
+        return api(originalRequest);
       } catch (refreshError) {
-        localStorage.removeItem('accessToken');
-        localStorage.removeItem('refreshToken');
-        localStorage.removeItem('user');
+        clearAccessToken();
         window.location.href = '/login';
         return Promise.reject(refreshError);
       }
@@ -56,8 +65,10 @@ api.interceptors.response.use(
 );
 
 export const authApi = {
-  login: (credentials) => api.post('/auth/login', credentials),
-  register: (data) => api.post('/auth/register', data),
+  login: (credentials) => api.post('/auth/login', credentials, { withCredentials: true }),
+  register: (data) => api.post('/auth/register', data, { withCredentials: true }),
+  refresh: () => api.post('/auth/refresh', {}, { withCredentials: true }),
+  logout: () => api.post('/auth/logout', {}, { withCredentials: true }),
 };
 
 export default api;

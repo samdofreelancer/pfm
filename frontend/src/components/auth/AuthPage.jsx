@@ -1,8 +1,10 @@
 import React, { useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { Mail, Lock, User, Eye, EyeOff, ArrowRight, Wallet, PiggyBank, TrendingUp, Shield } from 'lucide-react';
-import { authApi } from '../../services/api';
+import { authApi, setAccessToken } from '../../services/api';
 
-const AuthPage = () => {
+const AuthPage = ({ onLoginSuccess }) => {
+  const navigate = useNavigate();
   const [isLogin, setIsLogin] = useState(true);
   const [showPassword, setShowPassword] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -58,14 +60,11 @@ const AuthPage = () => {
             fullName: formData.fullName,
           });
 
-      const { accessToken, refreshToken, expiresIn, user } = response.data;
+      const { accessToken } = response.data;
+      setAccessToken(accessToken);
+      onLoginSuccess?.();
 
-      localStorage.setItem('accessToken', accessToken);
-      localStorage.setItem('refreshToken', refreshToken);
-      localStorage.setItem('tokenExpiresIn', expiresIn);
-      localStorage.setItem('user', JSON.stringify(user));
-
-      window.location.href = '/dashboard';
+      navigate('/dashboard');
     } catch (err) {
       const message =
         err.response?.data?.message ||
