@@ -1,11 +1,14 @@
 package com.pfm.api.controller;
 
+import com.pfm.api.dto.request.DeleteUserRequest;
 import com.pfm.api.dto.request.LoginRequest;
 import com.pfm.api.dto.request.RegisterRequest;
+import com.pfm.application.auth.command.DeleteUserCommand;
 import com.pfm.application.auth.command.LoginCommand;
 import com.pfm.application.auth.command.RefreshTokenCommand;
 import com.pfm.application.auth.command.RegisterCommand;
 import com.pfm.application.auth.dto.AuthResponse;
+import com.pfm.application.auth.handler.DeleteUserHandler;
 import com.pfm.application.auth.handler.LoginHandler;
 import com.pfm.application.auth.handler.RefreshTokenHandler;
 import com.pfm.application.auth.handler.RegisterHandler;
@@ -16,6 +19,7 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseCookie;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.CookieValue;
+import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
@@ -31,6 +35,7 @@ public class AuthController {
     private final LoginHandler loginHandler;
     private final RegisterHandler registerHandler;
     private final RefreshTokenHandler refreshTokenHandler;
+    private final DeleteUserHandler deleteUserHandler;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -96,6 +101,16 @@ public class AuthController {
         return ResponseEntity.ok()
             .header(HttpHeaders.SET_COOKIE, cookie.toString())
             .build();
+    }
+
+    @DeleteMapping("/users")
+    public ResponseEntity<Void> deleteUser(@Valid @RequestBody DeleteUserRequest request) {
+        DeleteUserCommand command = DeleteUserCommand.builder()
+            .email(request.getEmail())
+            .build();
+
+        deleteUserHandler.handle(command);
+        return ResponseEntity.noContent().build();
     }
 
     private ResponseCookie createRefreshTokenCookie(String refreshToken) {

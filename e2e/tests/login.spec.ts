@@ -13,7 +13,7 @@ const generateTestUser = () => {
 };
 
 test.describe('Authentication', () => {
-  test('should register and login successfully with new account', async ({ page }) => {
+  test('should register and login successfully with new account', async ({ page, request }) => {
     const loginPage = new LoginPage(page);
     const dashboardPage = new DashboardPage(page);
     const testUser = generateTestUser();
@@ -29,9 +29,14 @@ test.describe('Authentication', () => {
     await expect(dashboardPage.welcomeMessage).toBeVisible();
     await expect(dashboardPage.dashboardHeading).toBeVisible();
 
-    // Logout to clean up
+    // Logout
     await dashboardPage.logout();
     await expect(loginPage.welcomeHeading).toBeVisible();
+
+    // Clean up: delete the test user
+    await request.delete('/api/v1/auth/users', {
+      data: { email: testUser.email },
+    });
   });
 
   test('should login successfully with valid credentials', async ({ page }) => {

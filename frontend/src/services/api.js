@@ -130,6 +130,7 @@ export const authApi = {
     } catch (e) {}
     return api.post('/auth/logout', {}, { withCredentials: true, headers });
   },
+  deleteUser: (email) => api.delete('/auth/users', { data: { email }, withCredentials: true }),
 };
 
 export default api;
