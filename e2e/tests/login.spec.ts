@@ -2,7 +2,38 @@ import { test, expect } from '@playwright/test';
 import { LoginPage } from '../pages/LoginPage';
 import { DashboardPage } from '../pages/DashboardPage';
 
+// Test user credentials - using a unique email for each test run
+const generateTestUser = () => {
+  const timestamp = Date.now();
+  return {
+    fullName: 'Test User',
+    email: `testuser_${timestamp}@example.com`,
+    password: 'TestPassword123!',
+  };
+};
+
 test.describe('Authentication', () => {
+  test('should register and login successfully with new account', async ({ page }) => {
+    const loginPage = new LoginPage(page);
+    const dashboardPage = new DashboardPage(page);
+    const testUser = generateTestUser();
+
+    // Navigate to login page
+    await loginPage.goto();
+    await expect(loginPage.welcomeHeading).toBeVisible();
+
+    // Register new account
+    await loginPage.register(testUser.fullName, testUser.email, testUser.password);
+
+    // Verify redirect to dashboard
+    await expect(dashboardPage.welcomeMessage).toBeVisible();
+    await expect(dashboardPage.dashboardHeading).toBeVisible();
+
+    // Logout to clean up
+    await dashboardPage.logout();
+    await expect(loginPage.welcomeHeading).toBeVisible();
+  });
+
   test('should login successfully with valid credentials', async ({ page }) => {
     const loginPage = new LoginPage(page);
     const dashboardPage = new DashboardPage(page);
