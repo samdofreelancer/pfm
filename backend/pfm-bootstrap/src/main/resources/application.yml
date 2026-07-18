@@ -1,0 +1,42 @@
+spring:
+  application:
+    name: personal-finance-manager
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pfm
+    username: pfm_user
+    password: pfm_password
+    driver-class-name: org.postgresql.Driver
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+app:
+  jwt:
+    secret: bXlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25NdXN0QmVBdExlYXN0MjU2Qml0c0xvbmdGb3JIUzUxMkFsZ29yaXRobQ==
+    expiration-ms: 900000  # 15 minutes
+    refresh-expiration-ms: 604800000  # 7 days
+  cors:
+    allowed-origins: http://localhost:3000
+
+logging:
+  level:
+    com.pfm: DEBUG
+    org.springframework.security: DEBUG
+    org.hibernate.SQL: DEBUG
