@@ -1,7 +1,7 @@
 package com.pfm.infrastructure.security.service;
 
 import com.pfm.application.auth.handler.TokenService;
-import com.pfm.domain.user.model.User;
+import com.pfm.domain.auth.model.AuthUser;
 import io.jsonwebtoken.*;
 import io.jsonwebtoken.io.Decoders;
 import io.jsonwebtoken.security.Keys;
@@ -25,13 +25,13 @@ public class JwtService implements TokenService {
     private long refreshExpirationMs;
 
     @Override
-    public String generateAccessToken(User user) {
-        return generateToken(user.getEmail().getValue(), jwtExpirationMs);
+    public String generateAccessToken(AuthUser authUser) {
+        return generateToken(authUser.getEmail().toString(), jwtExpirationMs);
     }
 
     @Override
-    public String generateRefreshToken(User user) {
-        return generateToken(user.getEmail().getValue(), refreshExpirationMs);
+    public String generateRefreshToken(AuthUser authUser) {
+        return generateToken(authUser.getEmail().toString(), refreshExpirationMs);
     }
 
     @Override
