@@ -42,5 +42,5 @@ app:
 logging:
   level:
     com.pfm: DEBUG
-    org.springframework.security: DEBUG
+    org.springframework.security: INFO
     org.hibernate.SQL: DEBUG
