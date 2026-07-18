@@ -4,10 +4,10 @@ import com.pfm.application.auth.command.LoginCommand;
 import com.pfm.application.auth.dto.AuthResponse;
 import com.pfm.application.auth.mapper.AuthMapper;
 import com.pfm.common.exception.BusinessException;
-import com.pfm.domain.user.model.Email;
-import com.pfm.domain.user.model.User;
-import com.pfm.domain.user.model.UserId;
-import com.pfm.domain.user.repository.UserRepository;
+import com.pfm.domain.auth.model.Email;
+import com.pfm.domain.auth.model.AuthUser;
+import com.pfm.domain.auth.model.AuthUserId;
+import com.pfm.domain.auth.repository.AuthRepository;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -29,7 +29,7 @@ import static org.mockito.Mockito.*;
 class LoginHandlerTest {
 
     @Mock
-    private UserRepository userRepository;
+    private AuthRepository authRepository;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -44,7 +44,7 @@ class LoginHandlerTest {
     private LoginHandler loginHandler;
 
     private LoginCommand command;
-    private User user;
+    private AuthUser authUser;
 
     @BeforeEach
     void setUp() {
@@ -53,16 +53,14 @@ class LoginHandlerTest {
             .password("password123")
             .build();
 
-        UUID userId = UUID.randomUUID();
+        String userId = UUID.randomUUID().toString();
         Email email = new Email("john@example.com");
         String encodedPassword = "encodedPassword";
 
-        user = User.restore(
-            new UserId(userId),
-            email,
+        authUser = AuthUser.restore(
+            new AuthUserId(userId),
+            email.getValue(),
             encodedPassword,
-            "John Doe",
-            null,
             false,
             LocalDateTime.now(),
             LocalDateTime.now(),
@@ -73,10 +71,10 @@ class LoginHandlerTest {
     @Test
     void handle_ShouldLoginUser_WhenValidCredentials() {
         // Arrange
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(command.getPassword(), user.getPassword())).thenReturn(true);
-        when(tokenService.generateAccessToken(user)).thenReturn("accessToken");
-        when(tokenService.generateRefreshToken(user)).thenReturn("refreshToken");
+        when(authRepository.findByEmail(anyString())).thenReturn(Optional.of(authUser));
+        when(passwordEncoder.matches(command.getPassword(), authUser.getPassword())).thenReturn(true);
+        when(tokenService.generateAccessToken(authUser)).thenReturn("accessToken");
+        when(tokenService.generateRefreshToken(authUser)).thenReturn("refreshToken");
         when(tokenService.getAccessTokenExpirationMs()).thenReturn(900000L);
 
         AuthResponse expectedResponse = AuthResponse.builder()
@@ -85,7 +83,7 @@ class LoginHandlerTest {
             .expiresIn(900000L)
             .build();
 
-        when(authMapper.toAuthResponseWithTokens(user, "accessToken", "refreshToken", 900000L))
+        when(authMapper.toAuthResponseWithTokens(authUser, "accessToken", "refreshToken", 900000L))
             .thenReturn(expectedResponse);
 
         // Act
@@ -97,17 +95,17 @@ class LoginHandlerTest {
         assertEquals("refreshToken", response.getRefreshToken());
         assertEquals(900000L, response.getExpiresIn());
 
-        verify(userRepository).findByEmail(any(Email.class));
-        verify(passwordEncoder).matches(command.getPassword(), user.getPassword());
-        verify(tokenService).generateAccessToken(user);
-        verify(tokenService).generateRefreshToken(user);
-        verify(authMapper).toAuthResponseWithTokens(user, "accessToken", "refreshToken", 900000L);
+        verify(authRepository).findByEmail(anyString());
+        verify(passwordEncoder).matches(command.getPassword(), authUser.getPassword());
+        verify(tokenService).generateAccessToken(authUser);
+        verify(tokenService).generateRefreshToken(authUser);
+        verify(authMapper).toAuthResponseWithTokens(authUser, "accessToken", "refreshToken", 900000L);
     }
 
     @Test
     void handle_ShouldThrowException_WhenUserNotFound() {
         // Arrange
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.empty());
+        when(authRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
@@ -118,7 +116,7 @@ class LoginHandlerTest {
         assertEquals("Invalid email or password", exception.getMessage());
         assertEquals(401, exception.getStatus());
 
-        verify(userRepository).findByEmail(any(Email.class));
+        verify(authRepository).findByEmail(anyString());
         verify(passwordEncoder, never()).matches(anyString(), anyString());
         verify(tokenService, never()).generateAccessToken(any());
     }
@@ -126,8 +124,8 @@ class LoginHandlerTest {
     @Test
     void handle_ShouldThrowException_WhenPasswordIsInvalid() {
         // Arrange
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(command.getPassword(), user.getPassword())).thenReturn(false);
+        when(authRepository.findByEmail(anyString())).thenReturn(Optional.of(authUser));
+        when(passwordEncoder.matches(command.getPassword(), authUser.getPassword())).thenReturn(false);
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
@@ -138,27 +136,25 @@ class LoginHandlerTest {
         assertEquals("Invalid email or password", exception.getMessage());
         assertEquals(401, exception.getStatus());
 
-        verify(userRepository).findByEmail(any(Email.class));
-        verify(passwordEncoder).matches(command.getPassword(), user.getPassword());
+        verify(authRepository).findByEmail(anyString());
+        verify(passwordEncoder).matches(command.getPassword(), authUser.getPassword());
         verify(tokenService, never()).generateAccessToken(any());
     }
 
     @Test
     void handle_ShouldThrowException_WhenUserIsDisabled() {
         // Arrange
-        User disabledUser = User.restore(
-            new UserId(UUID.randomUUID()),
-            new Email("john@example.com"),
+        AuthUser disabledAuthUser = AuthUser.restore(
+            new AuthUserId(UUID.randomUUID().toString()),
+            "john@example.com",
             "encodedPassword",
-            "John Doe",
-            null,
             false,
             LocalDateTime.now(),
             LocalDateTime.now(),
             LocalDateTime.now()
         );
 
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(disabledUser));
+        when(authRepository.findByEmail(anyString())).thenReturn(Optional.of(disabledAuthUser));
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
@@ -180,28 +176,28 @@ class LoginHandlerTest {
         String refreshToken = "refreshToken";
         long expiresIn = 900000L;
 
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.of(user));
-        when(passwordEncoder.matches(command.getPassword(), user.getPassword())).thenReturn(true);
-        when(tokenService.generateAccessToken(user)).thenReturn(accessToken);
-        when(tokenService.generateRefreshToken(user)).thenReturn(refreshToken);
+        when(authRepository.findByEmail(anyString())).thenReturn(Optional.of(authUser));
+        when(passwordEncoder.matches(command.getPassword(), authUser.getPassword())).thenReturn(true);
+        when(tokenService.generateAccessToken(authUser)).thenReturn(accessToken);
+        when(tokenService.generateRefreshToken(authUser)).thenReturn(refreshToken);
         when(tokenService.getAccessTokenExpirationMs()).thenReturn(expiresIn);
 
-        when(authMapper.toAuthResponseWithTokens(user, accessToken, refreshToken, expiresIn))
+        when(authMapper.toAuthResponseWithTokens(authUser, accessToken, refreshToken, expiresIn))
             .thenReturn(AuthResponse.builder().build());
 
         // Act
         loginHandler.handle(command);
 
         // Assert
-        verify(tokenService).generateAccessToken(user);
-        verify(tokenService).generateRefreshToken(user);
+        verify(tokenService).generateAccessToken(authUser);
+        verify(tokenService).generateRefreshToken(authUser);
         verify(tokenService).getAccessTokenExpirationMs();
     }
 
     @Test
     void handle_ShouldNotCheckPassword_WhenUserNotFound() {
         // Arrange
-        when(userRepository.findByEmail(any(Email.class))).thenReturn(Optional.empty());
+        when(authRepository.findByEmail(anyString())).thenReturn(Optional.empty());
 
         // Act & Assert
         assertThrows(BusinessException.class, () -> loginHandler.handle(command));
