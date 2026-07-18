@@ -1,11 +1,14 @@
 package com.pfm.api.controller;
 
 import com.pfm.api.dto.request.LoginRequest;
+import com.pfm.api.dto.request.RefreshRequest;
 import com.pfm.api.dto.request.RegisterRequest;
 import com.pfm.application.auth.command.LoginCommand;
+import com.pfm.application.auth.command.RefreshTokenCommand;
 import com.pfm.application.auth.command.RegisterCommand;
 import com.pfm.application.auth.dto.AuthResponse;
 import com.pfm.application.auth.handler.LoginHandler;
+import com.pfm.application.auth.handler.RefreshTokenHandler;
 import com.pfm.application.auth.handler.RegisterHandler;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
@@ -20,6 +23,7 @@ public class AuthController {
 
     private final LoginHandler loginHandler;
     private final RegisterHandler registerHandler;
+    private final RefreshTokenHandler refreshTokenHandler;
 
     @PostMapping("/login")
     public ResponseEntity<AuthResponse> login(@Valid @RequestBody LoginRequest request) {
@@ -42,5 +46,15 @@ public class AuthController {
 
         AuthResponse response = registerHandler.handle(command);
         return ResponseEntity.status(HttpStatus.CREATED).body(response);
+    }
+
+    @PostMapping("/refresh")
+    public ResponseEntity<AuthResponse> refreshToken(@Valid @RequestBody RefreshRequest request) {
+        RefreshTokenCommand command = RefreshTokenCommand.builder()
+            .refreshToken(request.getRefreshToken())
+            .build();
+
+        AuthResponse response = refreshTokenHandler.handle(command);
+        return ResponseEntity.ok(response);
     }
 }

@@ -33,11 +33,11 @@ server:
 
 app:
   jwt:
-    secret: bXlTZWNyZXRLZXlGb3JKV1RUb2tlbkdlbmVyYXRpb25NdXN0QmVBdExlYXN0MjU2Qml0c0xvbmdGb3JIUzUxMkFsZ29yaXRobQ==
+    secret: ${JWT_SECRET:default-key-change-in-production-please-use-env-variable}
     expiration-ms: 900000  # 15 minutes
     refresh-expiration-ms: 604800000  # 7 days
   cors:
-    allowed-origins: http://localhost:3000
+    allowed-origins: http://localhost:3000,http://localhost:5173
 
 logging:
   level:
