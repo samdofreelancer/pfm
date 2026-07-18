@@ -10,7 +10,7 @@
     "resolveJsonModule": true,
     "isolatedModules": true,
     "noEmit": true,
-    "types": ["@playwright/test"]
+    "types": ["@playwright/test", "node"]
   },
   "include": ["./**/*"],
   "exclude": ["node_modules"]

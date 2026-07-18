@@ -26,10 +26,14 @@ export default defineConfig({
       use: { ...devices['Desktop Safari'] },
     },
   ],
-  webServer: {
-    command: 'npm run dev',
-    url: 'http://localhost:3000',
-    reuseExistingServer: !process.env.CI,
-    cwd: '../frontend',
-  },
+  // In Docker, frontend is already running as a separate service
+  // webServer is only used for local development
+  webServer: process.env.CI
+    ? undefined
+    : {
+        command: 'npm run dev',
+        url: 'http://localhost:3000',
+        reuseExistingServer: !process.env.CI,
+        cwd: '../frontend',
+      },
 });
