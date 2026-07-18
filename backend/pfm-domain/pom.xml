@@ -1,0 +1,29 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project xmlns="http://maven.apache.org/POM/4.0.0"
+         xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+         xsi:schemaLocation="http://maven.apache.org/POM/4.0.0
+         http://maven.apache.org/xsd/maven-4.0.0.xsd">
+    <modelVersion>4.0.0</modelVersion>
+
+    <parent>
+        <groupId>com.pfm</groupId>
+        <artifactId>pfm-backend</artifactId>
+        <version>1.0.0</version>
+    </parent>
+
+    <artifactId>pfm-domain</artifactId>
+    <name>PFM Domain</name>
+    <description>Domain Layer - Entities, Value Objects, Aggregates, Repository Interfaces, Domain Events, Domain Services</description>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.pfm</groupId>
+            <artifactId>pfm-common</artifactId>
+        </dependency>
+        <dependency>
+            <groupId>org.projectlombok</groupId>
+            <artifactId>lombok</artifactId>
+            <scope>provided</scope>
+        </dependency>
+    </dependencies>
+</project>

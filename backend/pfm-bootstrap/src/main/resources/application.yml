@@ -1,0 +1,47 @@
+spring:
+  application:
+    name: personal-finance-manager
+
+  datasource:
+    url: jdbc:postgresql://localhost:5432/pfm?TimeZone=Asia/Ho_Chi_Minh&ApplicationName=pfm
+    username: pfm_user
+    password: pfm_password
+    driver-class-name: org.postgresql.Driver
+    hikari:
+      connection-init-sql: SET TIME ZONE 'Asia/Ho_Chi_Minh'
+
+  jpa:
+    hibernate:
+      ddl-auto: validate
+    open-in-view: false
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.PostgreSQLDialect
+        format_sql: true
+        jdbc:
+          time_zone: Asia/Ho_Chi_Minh
+
+  flyway:
+    enabled: true
+    baseline-on-migrate: true
+    locations: classpath:db/migration
+
+server:
+  port: 8080
+  servlet:
+    context-path: /
+
+app:
+  jwt:
+    # Development-only default: a valid Base64 string that decodes to >=64 bytes
+    secret: ${JWT_SECRET:AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA}
+    expiration-ms: 900000  # 15 minutes
+    refresh-expiration-ms: 604800000  # 7 days
+  cors:
+    allowed-origins: http://localhost:3000,http://localhost:5173
+
+logging:
+  level:
+    com.pfm: DEBUG
+    org.springframework.security: INFO
+    org.hibernate.SQL: DEBUG
