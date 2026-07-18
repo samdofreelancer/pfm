@@ -1,23 +1,7 @@
-import { test, expect } from '@playwright/test';
-import { LoginPage } from '../pages/LoginPage';
-import { DashboardPage } from '../pages/DashboardPage';
-
-// Test user credentials - using a unique email for each test run
-const generateTestUser = () => {
-  const timestamp = Date.now();
-  return {
-    fullName: 'Test User',
-    email: `testuser_${timestamp}@example.com`,
-    password: 'TestPassword123!',
-  };
-};
+import { test, expect } from './fixtures/auth.fixture';
 
 test.describe('Authentication', () => {
-  test('should register and login successfully with new account', async ({ page, request }) => {
-    const loginPage = new LoginPage(page);
-    const dashboardPage = new DashboardPage(page);
-    const testUser = generateTestUser();
-
+  test('should register and login successfully with new account', async ({ loginPage, dashboardPage, testUser }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -32,17 +16,10 @@ test.describe('Authentication', () => {
     // Logout
     await dashboardPage.logout();
     await expect(loginPage.welcomeHeading).toBeVisible();
-
-    // Clean up: delete the test user
-    await request.delete('/api/v1/auth/users', {
-      data: { email: testUser.email },
-    });
+    // Cleanup is handled automatically by the testUser fixture
   });
 
-  test('should login successfully with valid credentials', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const dashboardPage = new DashboardPage(page);
-
+  test('should login successfully with valid credentials', async ({ loginPage, dashboardPage }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -55,9 +32,7 @@ test.describe('Authentication', () => {
     await expect(dashboardPage.dashboardHeading).toBeVisible();
   });
 
-  test('should show error message with invalid credentials', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('should show error message with invalid credentials', async ({ loginPage }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -74,9 +49,7 @@ test.describe('Authentication', () => {
     }
   });
 
-  test('should show error message with empty email', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('should show error message with empty email', async ({ loginPage }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -90,9 +63,7 @@ test.describe('Authentication', () => {
     expect(errorText).toContain('Email');
   });
 
-  test('should show error message with empty password', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('should show error message with empty password', async ({ loginPage }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -106,9 +77,7 @@ test.describe('Authentication', () => {
     expect(errorText).toContain('Password');
   });
 
-  test('should show error message with invalid email format', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('should show error message with invalid email format', async ({ loginPage }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -120,9 +89,7 @@ test.describe('Authentication', () => {
     await expect(loginPage.welcomeHeading).toBeVisible();
   });
 
-  test('should stay on login page after failed login', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('should stay on login page after failed login', async ({ loginPage, page }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -135,10 +102,7 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/.*\/login.*/);
   });
 
-  test('should logout successfully', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-    const dashboardPage = new DashboardPage(page);
-
+  test('should logout successfully', async ({ loginPage, dashboardPage }) => {
     // Login first
     await loginPage.goto();
     await loginPage.login('ginseng1000years@gmai.com', '123456');
@@ -151,9 +115,7 @@ test.describe('Authentication', () => {
     await expect(loginPage.welcomeHeading).toBeVisible();
   });
 
-  test('should show error message with short password on register', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('should show error message with short password on register', async ({ loginPage }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
@@ -170,9 +132,7 @@ test.describe('Authentication', () => {
     expect(errorText).toContain('6 characters');
   });
 
-  test('should show error message with empty full name on register', async ({ page }) => {
-    const loginPage = new LoginPage(page);
-
+  test('should show error message with empty full name on register', async ({ loginPage }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();
