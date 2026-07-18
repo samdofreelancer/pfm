@@ -54,7 +54,23 @@ Then open:
 - **Backend API:** http://localhost:8080
 - **API Docs:** http://localhost:8080/swagger-ui.html
 
-### Option 2: Local Development
+### Option 2: Local Development with Hot Reload
+
+```bash
+# Start database + backend (with hot reload) + frontend (with HMR)
+./start.sh --dev
+```
+
+Or on Windows:
+```cmd
+start.bat --dev
+```
+
+**Hot Reload Features:**
+- **Backend:** Spring Boot DevTools automatically restarts when Java files change
+- **Frontend:** Vite HMR (Hot Module Replacement) updates the browser instantly
+
+### Option 3: Standard Local Development
 
 ```bash
 # Start database + backend (local) + frontend (local)
@@ -73,6 +89,7 @@ start.bat
 | Command | Description |
 |---------|-------------|
 | `./start.sh` | Start DB (Docker) + Backend (local) + Frontend (local) |
+| `./start.sh --dev` | Start with hot reload enabled (backend + frontend) |
 | `./start.sh --docker` | Start everything in Docker |
 | `./start.sh --backend-only` | Start only backend |
 | `./start.sh --frontend-only` | Start only frontend |
@@ -296,6 +313,7 @@ pfm/
 - ✅ Error Handling
 - ✅ Loading States
 - ✅ Protected Routes
+- ✅ Hot Reload (Backend + Frontend)
 
 ### Planned
 - ⏳ Account Management
@@ -351,6 +369,7 @@ Make sure:
 - **Application Layer** contains use cases and DTOs
 - **Infrastructure Layer** handles JPA, Security, external APIs
 - **API Layer** exposes REST endpoints
+- **Hot Reload:** Spring Boot DevTools automatically restarts the application when classpath files change (Java, properties, etc.)
 
 ### Frontend
 
@@ -358,6 +377,7 @@ Make sure:
 - TailwindCSS for utility-first styling
 - Axios interceptors for JWT token management
 - React Router for client-side routing
+- **Hot Reload:** Vite HMR updates the browser instantly when files change, without full page reload
 
 ## 📄 License
 

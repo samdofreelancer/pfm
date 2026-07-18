@@ -11,5 +11,12 @@ export default defineConfig({
         changeOrigin: true,
       },
     },
+    // Hot reload settings
+    hmr: {
+      overlay: true,
+    },
+    watch: {
+      usePolling: true,
+    },
   },
 })

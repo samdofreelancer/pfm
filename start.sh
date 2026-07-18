@@ -27,14 +27,16 @@ cd "$SCRIPT_DIR"
 START_BACKEND=true
 START_FRONTEND=true
 USE_DOCKER=false
+USE_DEVTOOLS=false
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
         --backend-only) START_FRONTEND=false ;;
         --frontend-only) START_BACKEND=false ;;
         --docker) USE_DOCKER=true ;;
+        --dev) USE_DEVTOOLS=true ;;
         --help)
-            echo "Usage: $0 [--backend-only | --frontend-only | --docker | --help]"
+            echo "Usage: $0 [--backend-only | --frontend-only | --docker | --dev | --help]"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -143,7 +145,12 @@ if [ "$START_BACKEND" = true ]; then
     else
         echo ""
         echo -e "${CYAN}══════════════════════════════════════${NC}"
-        echo -e "${CYAN}  Building & Starting Backend...     ${NC}"
+        if [ "$USE_DEVTOOLS" = true ]; then
+            echo -e "${CYAN}  Building & Starting Backend...     ${NC}"
+            echo -e "${CYAN}  (Hot Reload Enabled)              ${NC}"
+        else
+            echo -e "${CYAN}  Building & Starting Backend...     ${NC}"
+        fi
         echo -e "${CYAN}══════════════════════════════════════${NC}"
         echo ""
 
@@ -153,7 +160,12 @@ if [ "$START_BACKEND" = true ]; then
         mvn install -DskipTests -q
         echo -e "${GREEN}✓ Backend modules built & installed.${NC}"
 
-        echo -e "${GREEN}→ Starting Spring Boot on http://localhost:8080${NC}"
+        if [ "$USE_DEVTOOLS" = true ]; then
+            echo -e "${GREEN}→ Starting Spring Boot with Hot Reload on http://localhost:8080${NC}"
+            echo -e "${YELLOW}  (DevTools enabled - auto-restart on code changes)${NC}"
+        else
+            echo -e "${GREEN}→ Starting Spring Boot on http://localhost:8080${NC}"
+        fi
         mvn spring-boot:run -pl pfm-bootstrap &
         BACKEND_PID=$!
 
@@ -178,7 +190,12 @@ if [ "$START_FRONTEND" = true ]; then
     else
         echo ""
         echo -e "${CYAN}══════════════════════════════════════${NC}"
-        echo -e "${CYAN}  Starting Frontend (Vite + React)...${NC}"
+        if [ "$USE_DEVTOOLS" = true ]; then
+            echo -e "${CYAN}  Starting Frontend (Vite + React)...${NC}"
+            echo -e "${CYAN}  (HMR Enabled)                      ${NC}"
+        else
+            echo -e "${CYAN}  Starting Frontend (Vite + React)...${NC}"
+        fi
         echo -e "${CYAN}══════════════════════════════════════${NC}"
         echo ""
 
@@ -190,7 +207,12 @@ if [ "$START_FRONTEND" = true ]; then
             echo -e "${GREEN}✓ Dependencies installed.${NC}"
         fi
 
-        echo -e "${GREEN}→ Starting Vite on http://localhost:3000${NC}"
+        if [ "$USE_DEVTOOLS" = true ]; then
+            echo -e "${GREEN}→ Starting Vite with HMR on http://localhost:3000${NC}"
+            echo -e "${YELLOW}  (Hot Module Replacement enabled)${NC}"
+        else
+            echo -e "${GREEN}→ Starting Vite on http://localhost:3000${NC}"
+        fi
         npm run dev &
         FRONTEND_PID=$!
 
@@ -215,6 +237,12 @@ if [ "$START_FRONTEND" = true ]; then
 fi
 echo -e "${GREEN}╚══════════════════════════════════════╝${NC}"
 echo ""
+if [ "$USE_DEVTOOLS" = true ]; then
+    echo -e "${YELLOW}💡 Hot Reload is ENABLED:${NC}"
+    echo -e "${YELLOW}   • Backend: Spring Boot DevTools (auto-restart on code changes)${NC}"
+    echo -e "${YELLOW}   • Frontend: Vite HMR (instant browser updates)${NC}"
+    echo ""
+fi
 echo -e "${YELLOW}Press Ctrl+C to stop all services.${NC}"
 
 cleanup() {

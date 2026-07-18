@@ -14,12 +14,14 @@ cd /d "%SCRIPT_DIR%"
 set START_BACKEND=1
 set START_FRONTEND=1
 set USE_DOCKER=0
+set USE_DEVTOOLS=0
 
 if "%1"=="--backend-only" set START_FRONTEND=0
 if "%1"=="--frontend-only" set START_BACKEND=0
 if "%1"=="--docker" set USE_DOCKER=1
+if "%1"=="--dev" set USE_DEVTOOLS=1
 if "%1"=="--help" (
-    echo Usage: start.bat [--backend-only ^| --frontend-only ^| --docker ^| --help]
+    echo Usage: start.bat [--backend-only ^| --frontend-only ^| --docker ^| --dev ^| --help]
     exit /b 0
 )
 
@@ -110,7 +112,12 @@ if %START_BACKEND%==1 (
         )
         echo ✓ Backend modules built ^& installed.
 
-        echo → Starting Spring Boot on http://localhost:8080
+        if %USE_DEVTOOLS%==1 (
+            echo → Starting Spring Boot with Hot Reload on http://localhost:8080
+            echo   (DevTools enabled - auto-restart on code changes)
+        ) else (
+            echo → Starting Spring Boot on http://localhost:8080
+        )
         start "PFM-Backend" cmd /c "mvn spring-boot:run -pl pfm-bootstrap"
 
         cd /d "%SCRIPT_DIR%"
@@ -145,7 +152,12 @@ if %START_FRONTEND%==1 (
             echo ✓ Dependencies installed.
         )
 
-        echo → Starting Vite on http://localhost:3000
+        if %USE_DEVTOOLS%==1 (
+            echo → Starting Vite with HMR on http://localhost:3000
+            echo   (Hot Module Replacement enabled)
+        ) else (
+            echo → Starting Vite on http://localhost:3000
+        )
         start "PFM-Frontend" cmd /c "npm run dev"
 
         cd /d "%SCRIPT_DIR%"
@@ -169,6 +181,12 @@ if %START_FRONTEND%==1 (
 )
 echo ╚══════════════════════════════════════╝
 echo.
+if %USE_DEVTOOLS%==1 (
+    echo 💡 Hot Reload is ENABLED:
+    echo    • Backend: Spring Boot DevTools (auto-restart on code changes)
+    echo    • Frontend: Vite HMR (instant browser updates)
+    echo.
+)
 echo Close the terminal windows to stop all services.
 echo To stop Docker containers later, run: docker-compose down
 pause
