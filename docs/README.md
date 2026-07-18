@@ -32,6 +32,12 @@ Welcome to the PFM documentation. This guide follows **Domain-Driven Design (DDD
 - [Report API](./api/07-report-api.md)
 - [AI Chat API](./api/08-chat-api.md)
 
+## 📌 What’s Included
+
+- **Architecture docs** explain the system design, module structure, deployment, and security
+- **API docs** describe endpoints, request/response shapes, and authentication flows
+- **DDD docs** cover domain models, aggregates, value objects, repositories, services, events, and coding standards
+
 ## 🏗️ Quick Start
 
 ```bash
