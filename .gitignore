@@ -1,0 +1,11 @@
+*.class
+/backend/target
+/frontend/node_modules
+/frontend/dist
+/backend/pfm-domain/target
+/backend/pfm-common/target
+/backend/pfm-application/target
+/backend/pfm-bootstrap/target
+/backend/pfm-api/target
+/backend/pfm-infrastructure/target
+/backend/pfm-infrastructure/target
