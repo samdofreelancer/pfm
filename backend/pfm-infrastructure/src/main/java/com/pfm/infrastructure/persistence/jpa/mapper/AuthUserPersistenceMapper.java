@@ -13,6 +13,8 @@ public class AuthUserPersistenceMapper {
             .id(java.util.UUID.fromString(authUser.getId().toString()))
             .email(authUser.getEmail().toString())
             .password(authUser.getPassword())
+            .fullName(authUser.getFullName())
+            .avatarUrl(authUser.getAvatarUrl())
             .emailVerified(authUser.isEmailVerified())
             .createdAt(authUser.getCreatedAt())
             .updatedAt(authUser.getUpdatedAt())
@@ -25,6 +27,8 @@ public class AuthUserPersistenceMapper {
             AuthUserId.from(entity.getId().toString()),
             entity.getEmail(),
             entity.getPassword(),
+            entity.getFullName(),
+            entity.getAvatarUrl(),
             entity.isEmailVerified(),
             entity.getCreatedAt(),
             entity.getUpdatedAt(),

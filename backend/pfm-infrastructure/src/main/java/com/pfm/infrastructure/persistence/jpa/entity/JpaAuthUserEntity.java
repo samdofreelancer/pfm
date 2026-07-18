@@ -27,6 +27,12 @@ public class JpaAuthUserEntity {
     @Column(name = "password_hash", nullable = false)
     private String password;
 
+    @Column(name = "full_name")
+    private String fullName;
+
+    @Column(name = "avatar_url")
+    private String avatarUrl;
+
     @Column(name = "email_verified")
     private boolean emailVerified = false;
 

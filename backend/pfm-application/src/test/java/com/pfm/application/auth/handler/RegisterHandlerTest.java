@@ -167,6 +167,7 @@ class RegisterHandlerTest {
         // Assert
         verify(authRepository).save(argThat(savedUser -> {
             assertEquals(command.getEmail(), savedUser.getEmail().getValue());
+            assertEquals(command.getFullName(), savedUser.getFullName());
             assertFalse(savedUser.isEmailVerified());
             assertNotNull(savedUser.getCreatedAt());
             assertNotNull(savedUser.getUpdatedAt());

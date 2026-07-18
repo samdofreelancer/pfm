@@ -36,7 +36,7 @@ public class RegisterHandler implements CommandHandler<RegisterCommand, AuthResp
         String encodedPassword = passwordEncoder.encode(command.getPassword());
 
         // Create domain AuthUser
-        AuthUser authUser = AuthUser.create(email.getValue(), encodedPassword);
+        AuthUser authUser = AuthUser.create(email.getValue(), encodedPassword, command.getFullName());
 
         // Persist
         AuthUser savedAuthUser = authRepository.save(authUser);

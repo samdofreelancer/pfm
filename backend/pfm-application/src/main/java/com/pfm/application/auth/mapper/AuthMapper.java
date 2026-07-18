@@ -17,8 +17,8 @@ public class AuthMapper {
             builder.user(AuthResponse.UserInfo.builder()
                 .id(authUser.getId().getValue())
                 .email(authUser.getEmail().getValue())
-                .fullName(null)
-                .avatarUrl(null)
+                .fullName(authUser.getFullName())
+                .avatarUrl(authUser.getAvatarUrl())
                 .build());
         }
 
