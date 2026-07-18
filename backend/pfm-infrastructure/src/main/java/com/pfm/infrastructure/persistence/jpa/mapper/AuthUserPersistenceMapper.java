@@ -2,14 +2,14 @@ package com.pfm.infrastructure.persistence.jpa.mapper;
 
 import com.pfm.domain.auth.model.AuthUser;
 import com.pfm.domain.auth.model.AuthUserId;
-import com.pfm.infrastructure.persistence.jpa.entity.JpaAuthUserEntity;
+import com.pfm.infrastructure.persistence.jpa.entity.JpaUserEntity;
 import org.springframework.stereotype.Component;
 
 @Component
 public class AuthUserPersistenceMapper {
 
-    public JpaAuthUserEntity toJpaEntity(AuthUser authUser) {
-        return JpaAuthUserEntity.builder()
+    public JpaUserEntity toJpaEntity(AuthUser authUser) {
+        return JpaUserEntity.builder()
             .id(java.util.UUID.fromString(authUser.getId().toString()))
             .email(authUser.getEmail().toString())
             .password(authUser.getPassword())
@@ -22,7 +22,7 @@ public class AuthUserPersistenceMapper {
             .build();
     }
 
-    public AuthUser toDomainUser(JpaAuthUserEntity entity) {
+    public AuthUser toDomainUser(JpaUserEntity entity) {
         return AuthUser.restore(
             AuthUserId.from(entity.getId().toString()),
             entity.getEmail(),
