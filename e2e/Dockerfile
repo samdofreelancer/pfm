@@ -1,13 +1,12 @@
-FROM mcr.microsoft.com/playwright:v1.47.0-focal AS base
+FROM mcr.microsoft.com/playwright:v1.61.0-noble AS base
 WORKDIR /app
 
 # Copy package files
 COPY package.json package-lock.json* ./
 COPY tsconfig.json ./
 
-# Install dependencies including Playwright browsers
+# Install dependencies (browsers are already included in the base image)
 RUN npm ci
-RUN npx playwright install --with-deps chromium
 
 # Copy source code
 COPY . .

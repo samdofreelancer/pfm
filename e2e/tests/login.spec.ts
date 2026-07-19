@@ -20,13 +20,18 @@ test.describe('Authentication', () => {
     // Cleanup is handled automatically by the testUser fixture
   });
 
-  test('should login successfully with valid credentials', async ({ loginPage, dashboardPage }) => {
-    // Navigate to login page
+  test('should login successfully with valid credentials', async ({ page, loginPage, dashboardPage, testUser }) => {
+    // Register a new user first
     await loginPage.goto();
+    await loginPage.register(testUser.fullName, testUser.email, testUser.password);
+    await expect(dashboardPage.welcomeMessage).toBeVisible({ timeout: 15000 });
+
+    // Logout to test login
+    await dashboardPage.logout();
     await expect(loginPage.welcomeHeading).toBeVisible();
 
-    // Login with valid credentials
-    await loginPage.login('ginseng1000years@gmai.com', '123456');
+    // Login with the registered credentials
+    await loginPage.login(testUser.email, testUser.password);
 
     // Verify redirect to dashboard
     await expect(dashboardPage.welcomeMessage).toBeVisible();
@@ -103,11 +108,11 @@ test.describe('Authentication', () => {
     await expect(page).toHaveURL(/.*\/login.*/);
   });
 
-  test('should logout successfully', async ({ loginPage, dashboardPage }) => {
-    // Login first
+  test('should logout successfully', async ({ page, loginPage, dashboardPage, testUser }) => {
+    // Register and login first
     await loginPage.goto();
-    await loginPage.login('ginseng1000years@gmai.com', '123456');
-    await expect(dashboardPage.welcomeMessage).toBeVisible();
+    await loginPage.register(testUser.fullName, testUser.email, testUser.password);
+    await expect(dashboardPage.welcomeMessage).toBeVisible({ timeout: 15000 });
 
     // Logout
     await dashboardPage.logout();

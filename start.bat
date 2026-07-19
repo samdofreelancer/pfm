@@ -56,7 +56,7 @@ set REDIS_RUNNING=%errorlevel%
 
 if %POSTGRES_RUNNING% neq 0 (
     echo → Starting Docker containers (PostgreSQL + Redis)...
-    docker-compose up -d
+    docker compose up -d
     if errorlevel 1 (
         echo ✗ Failed to start Docker containers. Is Docker running?
         pause
@@ -113,7 +113,7 @@ if %START_BACKEND%==1 (
 
     if %USE_DOCKER%==1 (
         echo → Building and starting backend container...
-        docker-compose up -d --build backend
+        docker compose up -d --build backend
         echo ✓ Backend container started.
     ) else (
         cd backend
@@ -151,7 +151,7 @@ if %START_FRONTEND%==1 (
 
     if %USE_DOCKER%==1 (
         echo → Building and starting frontend container...
-        docker-compose up -d --build frontend
+        docker compose up -d --build frontend
         echo ✓ Frontend container started.
     ) else (
         cd frontend
@@ -190,7 +190,7 @@ if %START_E2E%==1 (
     echo.
 
     echo → Building and starting e2e container...
-    docker-compose --profile e2e up --build e2e
+    docker compose --profile e2e up --build e2e
     if errorlevel 1 (
         echo ✗ E2E tests failed!
     ) else (
@@ -199,10 +199,10 @@ if %START_E2E%==1 (
     
     :: Cleanup e2e container after tests (unless --keep-e2e is set)
     if %KEEP_E2E%==1 (
-        echo → Keeping e2e container for debugging. Run 'docker-compose --profile e2e rm -f e2e' to clean up.
+        echo → Keeping e2e container for debugging. Run 'docker compose --profile e2e rm -f e2e' to clean up.
     ) else (
         echo → Cleaning up e2e container...
-        docker-compose --profile e2e rm -f e2e
+        docker compose --profile e2e rm -f e2e
         echo ✓ E2E container cleaned up.
     )
 )
@@ -235,6 +235,6 @@ if %USE_DEVTOOLS%==1 (
 )
 if not %START_E2E%==1 (
     echo Close the terminal windows to stop all services.
-    echo To stop Docker containers later, run: docker-compose down
+    echo To stop Docker containers later, run: docker compose down
 )
 pause
