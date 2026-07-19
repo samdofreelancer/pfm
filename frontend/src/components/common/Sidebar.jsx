@@ -7,6 +7,7 @@ import {
   Target,
   Settings,
   X,
+  Wallet,
 } from 'lucide-react';
 
 const navItems = [
@@ -20,55 +21,49 @@ const navItems = [
 const Sidebar = ({ isOpen, onClose }) => {
   return (
     <>
-      {/* Mobile overlay */}
       {isOpen && (
         <div
-          className="fixed inset-0 bg-black/50 z-40 lg:hidden"
+          className="fixed inset-0 bg-black/40 z-40 lg:hidden"
           onClick={onClose}
         />
       )}
 
-      {/* Sidebar */}
       <aside
         className={`
-          fixed top-0 left-0 z-50 h-full w-64 bg-white border-r border-gray-200
+          fixed top-0 left-0 z-50 h-full w-60 bg-white border-r border-gray-100
           transform transition-transform duration-200 ease-in-out
           lg:translate-x-0 lg:static lg:z-auto
           ${isOpen ? 'translate-x-0' : '-translate-x-full'}
         `}
       >
-        {/* Logo */}
-        <div className="flex items-center justify-between h-16 px-6 border-b border-gray-200">
-          <div className="flex items-center gap-2">
-            <div className="w-8 h-8 bg-primary-600 rounded-lg flex items-center justify-center">
-              <span className="text-white font-bold text-sm">P</span>
-            </div>
-            <span className="text-lg font-bold text-gray-900">PFM</span>
+        <div className="flex items-center gap-2.5 h-14 px-5 border-b border-gray-100">
+          <div className="w-7 h-7 bg-gradient-to-br from-primary-500 to-primary-700 rounded-lg flex items-center justify-center shadow-sm">
+            <span className="text-white font-bold text-xs">P</span>
           </div>
+          <span className="text-base font-semibold text-gray-800">PFM</span>
           <button
             onClick={onClose}
-            className="lg:hidden text-gray-400 hover:text-gray-600"
+            className="ml-auto lg:hidden text-gray-400 hover:text-gray-600"
           >
-            <X className="w-5 h-5" />
+            <X className="w-4 h-4" />
           </button>
         </div>
 
-        {/* Navigation */}
-        <nav className="p-4 space-y-1">
+        <nav className="p-3 space-y-0.5">
           {navItems.map((item) => (
             <NavLink
               key={item.to}
               to={item.to}
               onClick={onClose}
               className={({ isActive }) =>
-                `flex items-center gap-3 px-4 py-3 rounded-lg text-sm font-medium transition-colors duration-200 ${
+                `flex items-center gap-3 px-3 py-2.5 rounded-lg text-sm font-medium transition-all duration-150 ${
                   isActive
-                    ? 'bg-primary-50 text-primary-700'
-                    : 'text-gray-600 hover:bg-gray-50 hover:text-gray-900'
+                    ? 'bg-primary-50 text-primary-700 shadow-sm'
+                    : 'text-gray-500 hover:bg-gray-50 hover:text-gray-700'
                 }`
               }
             >
-              <item.icon className="w-5 h-5" />
+              <item.icon className="w-4.5 h-4.5" />
               {item.label}
             </NavLink>
           ))}

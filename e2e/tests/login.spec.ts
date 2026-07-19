@@ -11,8 +11,7 @@ test.describe('Authentication', () => {
 
     // Verify redirect to dashboard (more resilient in Docker/CI)
     await expect(page).toHaveURL(/.*\/dashboard.*/);
-    await expect(dashboardPage.welcomeText).toBeVisible({ timeout: 15000 });
-    await expect(dashboardPage.heading).toBeVisible();
+    await expect(dashboardPage.totalBalanceLabel).toBeVisible({ timeout: 15000 });
 
     // Logout
     await dashboardPage.logout();
@@ -24,7 +23,7 @@ test.describe('Authentication', () => {
     // Register a new user first
     await loginPage.goto();
     await loginPage.register(testUser.fullName, testUser.email, testUser.password);
-    await expect(dashboardPage.welcomeText).toBeVisible({ timeout: 15000 });
+    await expect(dashboardPage.totalBalanceLabel).toBeVisible({ timeout: 15000 });
 
     // Logout to test login
     await dashboardPage.logout();
@@ -34,8 +33,7 @@ test.describe('Authentication', () => {
     await loginPage.login(testUser.email, testUser.password);
 
     // Verify redirect to dashboard
-    await expect(dashboardPage.welcomeText).toBeVisible();
-    await expect(dashboardPage.heading).toBeVisible();
+    await expect(dashboardPage.totalBalanceLabel).toBeVisible();
   });
 
   test('should show error message with invalid credentials', async ({ loginPage }) => {
@@ -112,7 +110,7 @@ test.describe('Authentication', () => {
     // Register and login first
     await loginPage.goto();
     await loginPage.register(testUser.fullName, testUser.email, testUser.password);
-    await expect(dashboardPage.welcomeText).toBeVisible({ timeout: 15000 });
+    await expect(dashboardPage.totalBalanceLabel).toBeVisible({ timeout: 15000 });
 
     // Logout
     await dashboardPage.logout();

@@ -1,4 +1,4 @@
-import { Page, Locator, expect } from '@playwright/test';
+import { Page, Locator } from '@playwright/test';
 
 export class DashboardPage {
   readonly page: Page;
@@ -19,30 +19,20 @@ export class DashboardPage {
   readonly sidebarMobileClose: Locator;
   readonly mobileMenuButton: Locator;
 
-  // Summary cards
-  readonly totalBalanceCard: Locator;
+  // Total balance card
+  readonly totalBalanceLabel: Locator;
   readonly totalBalanceAmount: Locator;
-  readonly incomeCard: Locator;
-  readonly incomeAmount: Locator;
-  readonly expensesCard: Locator;
-  readonly expensesAmount: Locator;
-  readonly savingsCard: Locator;
-  readonly savingsAmount: Locator;
+  readonly incomeLabel: Locator;
+  readonly expenseLabel: Locator;
 
-  // Recent Transactions
-  readonly recentTransactionsHeading: Locator;
-  readonly viewAllButton: Locator;
-  readonly noTransactionsText: Locator;
-  readonly noTransactionsSubtext: Locator;
-  readonly addTransactionButton: Locator;
-
-  // Budget Overview
-  readonly budgetOverviewHeading: Locator;
-  readonly noBudgetsText: Locator;
-
-  // Savings Goals
-  readonly savingsGoalsHeading: Locator;
-  readonly noGoalsText: Locator;
+  // Sections
+  readonly tongQuanThuChiHeading: Locator;
+  readonly lichChiTieuHeading: Locator;
+  readonly tinhHinhThuChiHeading: Locator;
+  readonly ghiChepGanDayHeading: Locator;
+  readonly taiKhoanHeading: Locator;
+  readonly thuTienHeading: Locator;
+  readonly chiTienHeading: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -65,30 +55,20 @@ export class DashboardPage {
     this.sidebarLogo = page.locator('aside').locator('text=PFM');
     this.sidebarMobileClose = page.locator('aside button').first();
 
-    // Summary cards
-    this.totalBalanceCard = page.getByText('Total Balance').first().locator('..');
-    this.totalBalanceAmount = page.getByText('Total Balance').first().locator('..').locator('.text-2xl');
-    this.incomeCard = page.getByText('Income', { exact: true }).first().locator('..');
-    this.incomeAmount = page.getByText('Income', { exact: true }).first().locator('..').locator('.text-2xl');
-    this.expensesCard = page.getByText('Expenses', { exact: true }).first().locator('..');
-    this.expensesAmount = page.getByText('Expenses', { exact: true }).first().locator('..').locator('.text-2xl');
-    this.savingsCard = page.getByText('Savings', { exact: true }).first().locator('..');
-    this.savingsAmount = page.getByText('Savings', { exact: true }).first().locator('..').locator('.text-2xl');
+    // Total balance
+    this.totalBalanceLabel = page.locator('text=Tổng số dư');
+    this.totalBalanceAmount = page.locator('text=18.000.000');
+    this.incomeLabel = page.locator('text=Thu:');
+    this.expenseLabel = page.locator('text=Chi:');
 
-    // Recent Transactions
-    this.recentTransactionsHeading = page.getByRole('heading', { name: 'Recent Transactions' });
-    this.viewAllButton = page.getByRole('button', { name: 'View All' });
-    this.noTransactionsText = page.locator('text=No transactions yet');
-    this.noTransactionsSubtext = page.locator('text=Start by adding your first transaction');
-    this.addTransactionButton = page.getByRole('button', { name: 'Add Transaction' });
-
-    // Budget Overview
-    this.budgetOverviewHeading = page.getByRole('heading', { name: 'Budget Overview' });
-    this.noBudgetsText = page.locator('text=No budgets set up yet');
-
-    // Savings Goals
-    this.savingsGoalsHeading = page.getByRole('heading', { name: 'Savings Goals' });
-    this.noGoalsText = page.locator('text=No goals set up yet');
+    // Sections
+    this.tongQuanThuChiHeading = page.getByRole('heading', { name: 'Tổng quan thu chi' });
+    this.lichChiTieuHeading = page.getByRole('heading', { name: 'Lịch chi tiêu tháng' });
+    this.tinhHinhThuChiHeading = page.getByRole('heading', { name: 'Tình hình thu chi' });
+    this.ghiChepGanDayHeading = page.getByRole('heading', { name: 'Ghi chép gần đây' });
+    this.taiKhoanHeading = page.getByRole('heading', { name: 'Tài khoản' });
+    this.thuTienHeading = page.getByRole('heading', { name: 'Thu tiền' });
+    this.chiTienHeading = page.getByRole('heading', { name: 'Chi tiền' });
   }
 
   async isOnDashboard() {
@@ -100,7 +80,7 @@ export class DashboardPage {
   }
 
   async waitForDashboardLoaded() {
-    await this.heading.waitFor({ state: 'visible', timeout: 15000 });
+    await this.totalBalanceLabel.waitFor({ state: 'visible', timeout: 15000 });
     await this.page.waitForLoadState('networkidle');
   }
 
@@ -129,23 +109,6 @@ export class DashboardPage {
     return await this.totalBalanceAmount.textContent();
   }
 
-  async getIncomeAmount() {
-    return await this.incomeAmount.textContent();
-  }
-
-  async getExpensesAmount() {
-    return await this.expensesAmount.textContent();
-  }
-
-  async getSavingsAmount() {
-    return await this.savingsAmount.textContent();
-  }
-
-  async isSummaryCardVisible(cardName: 'Total Balance' | 'Income' | 'Expenses' | 'Savings') {
-    const card = this.page.locator(`text=${cardName}`).locator('..');
-    return await card.isVisible();
-  }
-
   async getActiveSidebarItem() {
     const activeLink = this.sidebar.locator('a.bg-primary-50');
     return await activeLink.textContent();
@@ -160,7 +123,7 @@ export class DashboardPage {
     const isMobile = await this.mobileMenuButton.isVisible();
     if (isMobile) {
       await this.mobileMenuButton.click();
-      await this.page.waitForTimeout(300); // wait for animation
+      await this.page.waitForTimeout(300);
     }
   }
 

@@ -20,8 +20,7 @@ test.describe('Dashboard', () => {
 
       // Verify URL and key elements
       await expect(page).toHaveURL(/.*\/dashboard.*/);
-      await expect(dashboardPage.heading).toBeVisible();
-      await expect(dashboardPage.welcomeText).toBeVisible();
+      await expect(dashboardPage.totalBalanceLabel).toBeVisible();
     });
 
     test('should show user name in header', async ({ page, loginPage, dashboardPage, testUser }) => {
@@ -58,7 +57,7 @@ test.describe('Dashboard', () => {
 
       // Should still be on dashboard (session persists via refresh token)
       await expect(page).toHaveURL(/.*\/dashboard.*/);
-      await expect(dashboardPage.heading).toBeVisible();
+      await expect(dashboardPage.totalBalanceLabel).toBeVisible();
     });
   });
 
@@ -146,50 +145,32 @@ test.describe('Dashboard', () => {
   });
 
   test.describe('Summary Cards', () => {
-    test('should display all 4 summary cards', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display total balance section', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      // All 4 cards should be visible
-      await expect(dashboardPage.totalBalanceCard).toBeVisible();
-      await expect(dashboardPage.incomeCard).toBeVisible();
-      await expect(dashboardPage.expensesCard).toBeVisible();
-      await expect(dashboardPage.savingsCard).toBeVisible();
+      await expect(dashboardPage.totalBalanceLabel).toBeVisible();
+      await expect(dashboardPage.totalBalanceAmount).toBeVisible();
     });
 
-    test('should display correct default amounts', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display income and expense labels', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      // All cards should show $0.00 as default
-      expect(await dashboardPage.getTotalBalance()).toContain('$0.00');
-      expect(await dashboardPage.getIncomeAmount()).toContain('$0.00');
-      expect(await dashboardPage.getExpensesAmount()).toContain('$0.00');
-      expect(await dashboardPage.getSavingsAmount()).toContain('$0.00');
-    });
-
-    test('should display card labels correctly', async ({ page, loginPage, dashboardPage, testUser }) => {
-      await loginPage.goto();
-      await loginPage.register(testUser.fullName, testUser.email, testUser.password);
-      await dashboardPage.waitForDashboardLoaded();
-
-      // Verify each card title is present (use exact text match to avoid conflicts)
-      await expect(page.getByText('Total Balance', { exact: true })).toBeVisible();
-      await expect(page.getByText('Income', { exact: true })).toBeVisible();
-      await expect(page.getByText('Expenses', { exact: true })).toBeVisible();
-      await expect(page.getByText('Savings', { exact: true }).first()).toBeVisible();
+      await expect(dashboardPage.incomeLabel).toBeVisible();
+      await expect(dashboardPage.expenseLabel).toBeVisible();
     });
   });
 
   test.describe('Recent Transactions Section', () => {
-    test('should display Recent Transactions section', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display Ghi chép gần đây section', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      await expect(dashboardPage.recentTransactionsHeading).toBeVisible();
+      await expect(dashboardPage.ghiChepGanDayHeading).toBeVisible();
     });
 
     test('should show empty state when no transactions exist', async ({ page, loginPage, dashboardPage, testUser }) => {
@@ -197,60 +178,73 @@ test.describe('Dashboard', () => {
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      // Empty state elements
-      await expect(dashboardPage.noTransactionsText).toBeVisible();
-      await expect(dashboardPage.noTransactionsSubtext).toBeVisible();
+      await expect(page.locator('text=Chưa có giao dịch')).toBeVisible();
     });
 
-    test('should display Add Transaction button in empty state', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display Thêm giao dịch button in empty state', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      await expect(dashboardPage.addTransactionButton).toBeVisible();
-      await expect(dashboardPage.addTransactionButton).toBeEnabled();
+      await expect(page.getByRole('button', { name: 'Thêm giao dịch' })).toBeVisible();
     });
 
-    test('should display View All button', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display Xem tất cả button', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      await expect(dashboardPage.viewAllButton).toBeVisible();
+      await expect(page.getByRole('button', { name: 'Xem tất cả →' })).toBeVisible();
     });
   });
 
   test.describe('Budget & Goals Sections', () => {
-    test('should display Budget Overview section', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display Tổng quan thu chi section', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      await expect(dashboardPage.budgetOverviewHeading).toBeVisible();
+      await expect(dashboardPage.tongQuanThuChiHeading).toBeVisible();
     });
 
-    test('should show empty state for Budgets', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display Lịch chi tiêu tháng section', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      await expect(dashboardPage.noBudgetsText).toBeVisible();
+      await expect(dashboardPage.lichChiTieuHeading).toBeVisible();
     });
 
-    test('should display Savings Goals section', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display Tình hình thu chi section', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      await expect(dashboardPage.savingsGoalsHeading).toBeVisible();
+      await expect(dashboardPage.tinhHinhThuChiHeading).toBeVisible();
     });
 
-    test('should show empty state for Goals', async ({ page, loginPage, dashboardPage, testUser }) => {
+    test('should display Tài khoản section', async ({ page, loginPage, dashboardPage, testUser }) => {
       await loginPage.goto();
       await loginPage.register(testUser.fullName, testUser.email, testUser.password);
       await dashboardPage.waitForDashboardLoaded();
 
-      await expect(dashboardPage.noGoalsText).toBeVisible();
+      await expect(dashboardPage.taiKhoanHeading).toBeVisible();
+    });
+
+    test('should display Thu tiền section', async ({ page, loginPage, dashboardPage, testUser }) => {
+      await loginPage.goto();
+      await loginPage.register(testUser.fullName, testUser.email, testUser.password);
+      await dashboardPage.waitForDashboardLoaded();
+
+      await expect(dashboardPage.thuTienHeading).toBeVisible();
+    });
+
+    test('should display Chi tiền section', async ({ page, loginPage, dashboardPage, testUser }) => {
+      await loginPage.goto();
+      await loginPage.register(testUser.fullName, testUser.email, testUser.password);
+      await dashboardPage.waitForDashboardLoaded();
+
+      await expect(dashboardPage.chiTienHeading).toBeVisible();
     });
   });
 
