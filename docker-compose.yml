@@ -88,6 +88,9 @@ services:
         condition: service_healthy
     command: npm test
     restart: "no"
+    # Only start e2e when explicitly requested (e.g., in CI)
+    profiles:
+      - e2e
     # Mount volumes for test results and reports
     volumes:
       - ./e2e/test-results:/app/test-results

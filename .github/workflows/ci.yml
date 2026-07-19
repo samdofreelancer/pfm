@@ -73,7 +73,7 @@ jobs:
       
       - name: Start services
         run: |
-          docker-compose up -d --build
+          docker compose up -d --build
       
       - name: Wait for services to be ready
         run: |
@@ -84,14 +84,14 @@ jobs:
       
       - name: Run E2E tests
         run: |
-          docker-compose run --rm e2e
+          docker compose --profile e2e run --rm e2e
         env:
           CI: 1
       
       - name: Stop services
         if: always()
         run: |
-          docker-compose down
+          docker compose down --remove-orphans
       
       - name: Upload E2E test results
         if: always()

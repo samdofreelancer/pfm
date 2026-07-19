@@ -190,7 +190,7 @@ if %START_E2E%==1 (
     echo.
 
     echo → Building and starting e2e container...
-    docker-compose up --build e2e
+    docker-compose --profile e2e up --build e2e
     if errorlevel 1 (
         echo ✗ E2E tests failed!
     ) else (
@@ -199,10 +199,10 @@ if %START_E2E%==1 (
     
     :: Cleanup e2e container after tests (unless --keep-e2e is set)
     if %KEEP_E2E%==1 (
-        echo → Keeping e2e container for debugging. Run 'docker-compose rm -f e2e' to clean up.
+        echo → Keeping e2e container for debugging. Run 'docker-compose --profile e2e rm -f e2e' to clean up.
     ) else (
         echo → Cleaning up e2e container...
-        docker-compose rm -f e2e
+        docker-compose --profile e2e rm -f e2e
         echo ✓ E2E container cleaned up.
     )
 )

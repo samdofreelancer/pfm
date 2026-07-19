@@ -260,7 +260,7 @@ if [ "$E2E_AFTER_START" = true ]; then
     echo -e "${YELLOW}→ Building and starting e2e container...${NC}"
     # Don't use set -e for e2e tests, capture exit code instead
     set +e
-    $DOCKER_COMPOSE up --build e2e
+    $DOCKER_COMPOSE --profile e2e up --build e2e
     E2E_EXIT_CODE=$?
     set -e
     
@@ -272,10 +272,10 @@ if [ "$E2E_AFTER_START" = true ]; then
     
     # Cleanup e2e container after tests (unless --keep-e2e is set)
     if [ "$KEEP_E2E" = true ]; then
-        echo -e "${YELLOW}→ Keeping e2e container for debugging. Run 'docker-compose rm -f e2e' to clean up.${NC}"
+        echo -e "${YELLOW}→ Keeping e2e container for debugging. Run 'docker-compose --profile e2e rm -f e2e' to clean up.${NC}"
     else
         echo -e "${YELLOW}→ Cleaning up e2e container...${NC}"
-        $DOCKER_COMPOSE rm -f e2e
+        $DOCKER_COMPOSE --profile e2e rm -f e2e
         echo -e "${GREEN}✓ E2E container cleaned up.${NC}"
     fi
 fi
