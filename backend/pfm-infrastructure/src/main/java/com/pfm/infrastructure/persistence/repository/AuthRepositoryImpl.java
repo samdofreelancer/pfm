@@ -20,7 +20,7 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     @Override
     public Optional<AuthUser> findById(AuthUserId id) {
-        return jpaUserRepository.findById(java.util.UUID.fromString(id.getValue()))
+        return jpaUserRepository.findById(id.getValue())
             .map(authUserPersistenceMapper::toDomainUser);
     }
 
@@ -44,6 +44,6 @@ public class AuthRepositoryImpl implements AuthRepository {
 
     @Override
     public void delete(AuthUserId id) {
-        jpaUserRepository.deleteById(java.util.UUID.fromString(id.getValue()));
+        jpaUserRepository.deleteById(id.getValue());
     }
 }

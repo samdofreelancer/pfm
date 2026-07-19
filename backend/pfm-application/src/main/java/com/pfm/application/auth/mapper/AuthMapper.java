@@ -15,7 +15,7 @@ public class AuthMapper {
 
         if (authUser != null) {
             builder.user(AuthResponse.UserInfo.builder()
-                .id(authUser.getId().getValue())
+                .id(authUser.getId().getValue().toString())
                 .email(authUser.getEmail().getValue())
                 .fullName(authUser.getFullName())
                 .avatarUrl(authUser.getAvatarUrl())

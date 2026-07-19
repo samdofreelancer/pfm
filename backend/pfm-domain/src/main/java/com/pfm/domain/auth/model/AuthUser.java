@@ -41,7 +41,7 @@ public class AuthUser {
     public static AuthUser create(String email, String encodedPassword, String fullName) {
         AuthUserId authUserId = AuthUserId.generate();
         AuthUser authUser = new AuthUser(authUserId, Email.from(email), encodedPassword, fullName, null);
-        authUser.registerEvent(new AuthUserCreatedEvent(authUserId.getValue(), email));
+        authUser.registerEvent(new AuthUserCreatedEvent(authUserId.getValue().toString(), email));
         return authUser;
     }
 

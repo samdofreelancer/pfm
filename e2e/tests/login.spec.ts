@@ -1,7 +1,7 @@
 import { test, expect } from './fixtures/auth.fixture';
 
 test.describe('Authentication', () => {
-  test('should register and login successfully with new account', async ({ loginPage, dashboardPage, testUser }) => {
+  test('should register and login successfully with new account', async ({ page, loginPage, dashboardPage, testUser }) => {
     // Navigate to login page
     await loginPage.goto();
     await expect(loginPage.welcomeHeading).toBeVisible();

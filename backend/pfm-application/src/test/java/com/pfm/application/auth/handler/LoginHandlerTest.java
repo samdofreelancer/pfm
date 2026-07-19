@@ -58,7 +58,7 @@ class LoginHandlerTest {
         String encodedPassword = "encodedPassword";
 
         authUser = AuthUser.restore(
-            new AuthUserId(userId),
+            AuthUserId.from(userId),
             email.getValue(),
             encodedPassword,
             false,
@@ -145,7 +145,7 @@ class LoginHandlerTest {
     void handle_ShouldThrowException_WhenUserIsDisabled() {
         // Arrange
         AuthUser disabledAuthUser = AuthUser.restore(
-            new AuthUserId(UUID.randomUUID().toString()),
+            AuthUserId.from(UUID.randomUUID().toString()),
             "john@example.com",
             "encodedPassword",
             false,

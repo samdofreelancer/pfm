@@ -67,7 +67,7 @@ class RegisterHandlerTest {
 
         AuthUser authUser = AuthUser.create(email.getValue(), encodedPassword);
         AuthUser savedAuthUser = AuthUser.restore(
-            new AuthUserId(userId),
+            AuthUserId.from(userId),
             email.getValue(),
             encodedPassword,
             false,

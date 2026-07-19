@@ -10,7 +10,7 @@ public class AuthUserPersistenceMapper {
 
     public JpaUserEntity toJpaEntity(AuthUser authUser) {
         return JpaUserEntity.builder()
-            .id(java.util.UUID.fromString(authUser.getId().toString()))
+            .id(authUser.getId().getValue())
             .email(authUser.getEmail().toString())
             .password(authUser.getPassword())
             .fullName(authUser.getFullName())
