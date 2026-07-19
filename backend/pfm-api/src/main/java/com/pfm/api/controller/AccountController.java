@@ -3,6 +3,8 @@ package com.pfm.api.controller;
 import com.pfm.api.dto.request.CreateAccountRequest;
 import com.pfm.application.account.command.CreateAccountCommand;
 import com.pfm.application.account.command.CreateAccountHandler;
+import com.pfm.application.account.command.DeleteAccountCommand;
+import com.pfm.application.account.command.DeleteAccountHandler;
 import com.pfm.application.account.mapper.AccountMapper;
 import com.pfm.application.account.query.GetAccountsHandler;
 import jakarta.validation.Valid;
@@ -19,6 +21,7 @@ import java.util.List;
 public class AccountController {
 
     private final CreateAccountHandler createAccountHandler;
+    private final DeleteAccountHandler deleteAccountHandler;
     private final GetAccountsHandler getAccountsHandler;
     private final AccountMapper accountMapper;
 
@@ -45,5 +48,11 @@ public class AccountController {
             .map(accountMapper::toResponse)
             .toList();
         return ResponseEntity.ok(accounts);
+    }
+
+    @DeleteMapping("/{id}")
+    public ResponseEntity<Void> deleteAccount(@PathVariable String id, @RequestParam String userId) {
+        deleteAccountHandler.handle(new DeleteAccountCommand(id, userId));
+        return ResponseEntity.noContent().build();
     }
 }

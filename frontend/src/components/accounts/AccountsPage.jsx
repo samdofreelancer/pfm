@@ -33,6 +33,24 @@ const AccountsPage = () => {
     }
   };
 
+  const handleDeleteAccount = async (accountId) => {
+    if (!window.confirm('Are you sure you want to delete this account? This action cannot be undone.')) {
+      return;
+    }
+
+    setError('');
+    setSuccess('');
+
+    try {
+      const userId = 'demo-user-id';
+      await accountApi.deleteAccount(accountId, userId);
+      setSuccess('Account deleted successfully');
+      loadAccounts();
+    } catch (err) {
+      setError(err.response?.data?.message || 'Failed to delete account');
+    }
+  };
+
   const handleCreateAccount = async (e) => {
     e.preventDefault();
     setError('');
@@ -210,13 +228,22 @@ const AccountsPage = () => {
                     {getAccountTypeLabel(account.type)} • {account.currency}
                   </p>
                 </div>
-                <div className="text-right">
-                  <p className="font-semibold text-gray-900">
-                    {account.balance?.toLocaleString()} {account.currency}
-                  </p>
-                  <p className="text-sm text-gray-500">
-                    {account.isActive ? 'Active' : 'Inactive'}
-                  </p>
+                <div className="flex items-center gap-4">
+                  <div className="text-right">
+                    <p className="font-semibold text-gray-900">
+                      {account.balance?.toLocaleString()} {account.currency}
+                    </p>
+                    <p className="text-sm text-gray-500">
+                      {account.isActive ? 'Active' : 'Inactive'}
+                    </p>
+                  </div>
+                  <button
+                    onClick={() => handleDeleteAccount(account.id)}
+                    className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
+                    title="Delete account"
+                  >
+                    Delete
+                  </button>
                 </div>
               </div>
             ))}
