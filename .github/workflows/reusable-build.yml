@@ -66,7 +66,7 @@ jobs:
 
       - name: Build and test backend
         if: inputs.build-backend
-        run: .github/scripts/build-backend.sh
+        run: bash .github/scripts/build-backend.sh
 
       # --- Frontend ---
       - name: Setup Node.js
@@ -77,7 +77,7 @@ jobs:
 
       - name: Build frontend
         if: inputs.build-frontend
-        run: .github/scripts/build-frontend.sh
+        run: bash .github/scripts/build-frontend.sh
 
       # --- Docker ---
       - name: Set up Docker Buildx
@@ -86,7 +86,7 @@ jobs:
 
       - name: Build Docker images
         if: inputs.build-docker
-        run: .github/scripts/build-docker.sh
+        run: bash .github/scripts/build-docker.sh
 
       # --- Upload test results ---
       - name: Upload test results
@@ -102,7 +102,7 @@ jobs:
       # --- Export & upload Docker images ---
       - name: Export Docker images
         if: inputs.build-docker && inputs.upload-docker-images && success()
-        run: .github/scripts/export-docker.sh /tmp/docker-images
+        run: bash .github/scripts/export-docker.sh /tmp/docker-images
 
       - name: Upload Docker images
         if: inputs.build-docker && inputs.upload-docker-images && success()
