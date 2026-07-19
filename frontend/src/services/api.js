@@ -136,4 +136,9 @@ export const authApi = {
   deleteUser: (email) => api.delete('/auth/users', { data: { email }, withCredentials: true }),
 };
 
+export const accountApi = {
+  createAccount: (data) => api.post('/accounts', data, { withCredentials: true }),
+  getAccounts: (userId) => api.get(`/accounts?userId=${userId}`, { withCredentials: true }),
+};
+
 export default api;
