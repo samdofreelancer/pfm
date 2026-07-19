@@ -5,12 +5,12 @@ CREATE TABLE IF NOT EXISTS accounts (
     name VARCHAR(100) NOT NULL,
     description TEXT,
     balance DECIMAL(19,2) NOT NULL DEFAULT 0.00,
-    currency CHAR(3) NOT NULL,
+    currency VARCHAR(3) NOT NULL,
     is_active BOOLEAN NOT NULL DEFAULT TRUE,
     created_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
-    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP ON UPDATE CURRENT_TIMESTAMP,
-    deleted_at TIMESTAMP NULL,
-
-    INDEX idx_user_id (user_id),
-    INDEX idx_user_active (user_id, is_active)
+    updated_at TIMESTAMP NOT NULL DEFAULT CURRENT_TIMESTAMP,
+    deleted_at TIMESTAMP NULL
 );
+
+CREATE INDEX idx_user_id ON accounts(user_id);
+CREATE INDEX idx_user_active ON accounts(user_id, is_active);
