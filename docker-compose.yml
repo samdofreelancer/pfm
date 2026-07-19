@@ -88,6 +88,10 @@ services:
         condition: service_healthy
     command: npm test
     restart: "no"
+    # Mount volumes for test results and reports
+    volumes:
+      - ./e2e/test-results:/app/test-results
+      - ./e2e/playwright-report:/app/playwright-report
 
 volumes:
   pgdata:

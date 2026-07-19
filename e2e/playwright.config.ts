@@ -6,8 +6,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   retries: process.env.CI ? 2 : 0,
   workers: process.env.CI ? 2 : undefined,
-  // Use list reporter in CI for better visibility, html for local
-  reporter: process.env.CI ? 'list' : 'html',
+  // Use list + HTML reporter in CI for better visibility, html for local
+  reporter: process.env.CI 
+    ? [['list'], ['html', { outputFolder: 'playwright-report', open: 'never' }]]
+    : 'html',
   use: {
     baseURL: process.env.CI ? 'http://frontend:3000' : 'http://localhost:3000',
     trace: 'on-first-retry',

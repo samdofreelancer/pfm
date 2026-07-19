@@ -7,10 +7,13 @@ COPY tsconfig.json ./
 
 # Install dependencies including Playwright browsers
 RUN npm ci
-RUN npx playwright install --with-deps chromium firefox webkit
+RUN npx playwright install --with-deps chromium
 
 # Copy source code
 COPY . .
 
-# Run tests
+# Create directories for test results and reports
+RUN mkdir -p /app/test-results /app/playwright-report
+
+# Run tests with HTML reporter for CI
 CMD ["npm", "test"]
