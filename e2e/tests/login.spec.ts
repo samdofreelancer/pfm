@@ -9,8 +9,9 @@ test.describe('Authentication', () => {
     // Register new account
     await loginPage.register(testUser.fullName, testUser.email, testUser.password);
 
-    // Verify redirect to dashboard
-    await expect(dashboardPage.welcomeMessage).toBeVisible();
+    // Verify redirect to dashboard (more resilient in Docker/CI)
+    await expect(page).toHaveURL(/.*\/dashboard.*/);
+    await expect(dashboardPage.welcomeMessage).toBeVisible({ timeout: 15000 });
     await expect(dashboardPage.dashboardHeading).toBeVisible();
 
     // Logout

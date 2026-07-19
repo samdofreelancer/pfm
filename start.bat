@@ -13,15 +13,30 @@ cd /d "%SCRIPT_DIR%"
 :: Parse arguments
 set START_BACKEND=1
 set START_FRONTEND=1
+set START_E2E=0
+set KEEP_E2E=0
 set USE_DOCKER=0
 set USE_DEVTOOLS=0
 
-if "%1"=="--backend-only" set START_FRONTEND=0
-if "%1"=="--frontend-only" set START_BACKEND=0
+if "%1"=="--backend-only" set START_FRONTEND=0& set START_E2E=0& set KEEP_E2E=0
+if "%1"=="--frontend-only" set START_BACKEND=0& set START_E2E=0& set KEEP_E2E=0
+if "%1"=="--e2e-only" set START_BACKEND=0& set START_FRONTEND=0& set START_E2E=1
+if "%1"=="--e2e" set START_E2E=1
+if "%1"=="--keep-e2e" set KEEP_E2E=1
 if "%1"=="--docker" set USE_DOCKER=1
 if "%1"=="--dev" set USE_DEVTOOLS=1
 if "%1"=="--help" (
-    echo Usage: start.bat [--backend-only ^| --frontend-only ^| --docker ^| --dev ^| --help]
+    echo Usage: start.bat [--backend-only ^| --frontend-only ^| --e2e-only ^| --e2e ^| --keep-e2e ^| --docker ^| --dev ^| --help]
+    echo.
+    echo Options:
+    echo   --backend-only  Start only the backend service
+    echo   --frontend-only Start only the frontend service
+    echo   --e2e-only      Run only the e2e tests (starts backend/frontend in Docker)
+    echo   --e2e           Run e2e tests after starting services (requires --docker)
+    echo   --keep-e2e      Keep e2e container after tests for debugging
+    echo   --docker        Run services in Docker containers
+    echo   --dev           Enable hot reload for local development
+    echo   --help          Show this help message
     exit /b 0
 )
 
@@ -165,6 +180,34 @@ if %START_FRONTEND%==1 (
 )
 
 :: ===========================
+:: E2E
+:: ===========================
+if %START_E2E%==1 (
+    echo.
+    echo ═══════════════════════════════════════
+    echo   Running E2E Tests (Docker)...
+    echo ═══════════════════════════════════════
+    echo.
+
+    echo → Building and starting e2e container...
+    docker-compose up --build e2e
+    if errorlevel 1 (
+        echo ✗ E2E tests failed!
+    ) else (
+        echo ✓ E2E tests passed!
+    )
+    
+    :: Cleanup e2e container after tests (unless --keep-e2e is set)
+    if %KEEP_E2E%==1 (
+        echo → Keeping e2e container for debugging. Run 'docker-compose rm -f e2e' to clean up.
+    ) else (
+        echo → Cleaning up e2e container...
+        docker-compose rm -f e2e
+        echo ✓ E2E container cleaned up.
+    )
+)
+
+:: ===========================
 :: SUMMARY
 :: ===========================
 echo.
@@ -179,6 +222,9 @@ if %START_BACKEND%==1 (
 if %START_FRONTEND%==1 (
     echo ║  Frontend: http://localhost:3000     ║
 )
+if %START_E2E%==1 (
+    echo ║  E2E:      Tests completed           ║
+)
 echo ╚══════════════════════════════════════╝
 echo.
 if %USE_DEVTOOLS%==1 (
@@ -187,6 +233,8 @@ if %USE_DEVTOOLS%==1 (
     echo    • Frontend: Vite HMR (instant browser updates)
     echo.
 )
-echo Close the terminal windows to stop all services.
-echo To stop Docker containers later, run: docker-compose down
+if not %START_E2E%==1 (
+    echo Close the terminal windows to stop all services.
+    echo To stop Docker containers later, run: docker-compose down
+)
 pause
