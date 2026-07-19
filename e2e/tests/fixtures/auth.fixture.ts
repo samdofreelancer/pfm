@@ -2,6 +2,7 @@ import { test as base, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { DashboardPage } from '../../pages/DashboardPage';
 import { ProfilePage } from '../../pages/ProfilePage';
+import { AccountsPage } from '../../pages/AccountsPage';
 
 type TestUser = {
   fullName: string;
@@ -13,6 +14,7 @@ type TestFixtures = {
   loginPage: LoginPage;
   dashboardPage: DashboardPage;
   profilePage: ProfilePage;
+  accountsPage: AccountsPage;
   testUser: TestUser;
 };
 
@@ -43,6 +45,10 @@ export const test = base.extend<TestFixtures>({
   profilePage: async ({ page }, use) => {
     const profilePage = new ProfilePage(page);
     await use(profilePage);
+  },
+  accountsPage: async ({ page }, use) => {
+    const accountsPage = new AccountsPage(page);
+    await use(accountsPage);
   },
   testUser: async ({ request }, use) => {
     const testUser = generateTestUser();

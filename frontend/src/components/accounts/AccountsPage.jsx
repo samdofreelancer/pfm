@@ -92,18 +92,19 @@ const AccountsPage = () => {
 
   if (loading) {
     return (
-      <div className="flex items-center justify-center h-64">
+      <div className="flex items-center justify-center h-64" data-testid="accounts-loading">
         <div className="text-gray-500">Loading...</div>
       </div>
     );
   }
 
   return (
-    <div className="max-w-4xl mx-auto space-y-6">
+    <div className="max-w-4xl mx-auto space-y-6" data-testid="accounts-page">
       <div className="flex justify-between items-center">
-        <h1 className="text-3xl font-bold text-gray-900">Accounts</h1>
+        <h1 className="text-3xl font-bold text-gray-900" data-testid="accounts-heading">Accounts</h1>
         <button
           onClick={() => setShowForm(!showForm)}
+          data-testid="add-account-button"
           className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
         >
           {showForm ? 'Cancel' : 'Add Account'}
@@ -111,19 +112,19 @@ const AccountsPage = () => {
       </div>
 
       {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg">
+        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" data-testid="error-message">
           {error}
         </div>
       )}
 
       {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg">
+        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" data-testid="success-message">
           {success}
         </div>
       )}
 
       {showForm && (
-        <div className="bg-white rounded-xl border border-gray-200 p-6">
+        <div className="bg-white rounded-xl border border-gray-200 p-6" data-testid="create-account-form">
           <h2 className="text-xl font-semibold text-gray-900 mb-4">Create New Account</h2>
           <form onSubmit={handleCreateAccount} className="space-y-4">
             <div>
@@ -133,6 +134,7 @@ const AccountsPage = () => {
               <select
                 value={formData.type}
                 onChange={(e) => setFormData({ ...formData, type: e.target.value })}
+                data-testid="account-type-select"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
               >
                 <option value="CASH">Tiền mặt</option>
@@ -151,6 +153,7 @@ const AccountsPage = () => {
                 type="text"
                 value={formData.name}
                 onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                data-testid="account-name-input"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="e.g., Vietcombank Account"
                 required
@@ -164,6 +167,7 @@ const AccountsPage = () => {
               <textarea
                 value={formData.description}
                 onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                data-testid="account-description-input"
                 className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 placeholder="Optional description"
                 rows={3}
@@ -180,6 +184,7 @@ const AccountsPage = () => {
                   step="0.01"
                   value={formData.initialBalance}
                   onChange={(e) => setFormData({ ...formData, initialBalance: e.target.value })}
+                  data-testid="account-balance-input"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                   required
                 />
@@ -192,6 +197,7 @@ const AccountsPage = () => {
                 <select
                   value={formData.currency}
                   onChange={(e) => setFormData({ ...formData, currency: e.target.value })}
+                  data-testid="account-currency-select"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500"
                 >
                   <option value="VND">VND</option>
@@ -203,6 +209,7 @@ const AccountsPage = () => {
 
             <button
               type="submit"
+              data-testid="create-account-submit"
               className="px-4 py-2 bg-primary-600 text-white rounded-lg hover:bg-primary-700 transition-colors"
             >
               Create Account
@@ -211,34 +218,36 @@ const AccountsPage = () => {
         </div>
       )}
 
-      <div className="bg-white rounded-xl border border-gray-200 p-6">
+      <div className="bg-white rounded-xl border border-gray-200 p-6" data-testid="accounts-list">
         <h2 className="text-xl font-semibold text-gray-900 mb-4">Your Accounts</h2>
         {accounts.length === 0 ? (
-          <p className="text-gray-500">No accounts yet. Create your first account to get started.</p>
+          <p className="text-gray-500" data-testid="no-accounts-message">No accounts yet. Create your first account to get started.</p>
         ) : (
-          <div className="space-y-3">
+          <div className="space-y-3" data-testid="accounts-items">
             {accounts.map((account) => (
               <div
                 key={account.id}
+                data-testid={`account-item-${account.id}`}
                 className="flex items-center justify-between p-4 bg-gray-50 rounded-lg"
               >
                 <div>
-                  <h3 className="font-medium text-gray-900">{account.name}</h3>
-                  <p className="text-sm text-gray-500">
+                  <h3 className="font-medium text-gray-900" data-testid={`account-name-${account.id}`}>{account.name}</h3>
+                  <p className="text-sm text-gray-500" data-testid={`account-type-${account.id}`}>
                     {getAccountTypeLabel(account.type)} • {account.currency}
                   </p>
                 </div>
                 <div className="flex items-center gap-4">
                   <div className="text-right">
-                    <p className="font-semibold text-gray-900">
+                    <p className="font-semibold text-gray-900" data-testid={`account-balance-${account.id}`}>
                       {account.balance?.toLocaleString()} {account.currency}
                     </p>
-                    <p className="text-sm text-gray-500">
+                    <p className="text-sm text-gray-500" data-testid={`account-status-${account.id}`}>
                       {account.isActive ? 'Active' : 'Inactive'}
                     </p>
                   </div>
                   <button
                     onClick={() => handleDeleteAccount(account.id)}
+                    data-testid={`delete-account-${account.id}`}
                     className="px-3 py-1 text-sm text-red-600 hover:bg-red-50 rounded-lg transition-colors"
                     title="Delete account"
                   >
