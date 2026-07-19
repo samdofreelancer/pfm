@@ -37,6 +37,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: pfm_backend
     container_name: pfm-backend
     ports:
       - "8080:8080"
@@ -60,6 +61,7 @@ services:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: pfm_frontend
     container_name: pfm-frontend
     ports:
       - "3000:3000"
@@ -78,6 +80,7 @@ services:
     build:
       context: ./e2e
       dockerfile: Dockerfile
+    image: pfm_e2e
     container_name: pfm-e2e
     environment:
       - CI=1
