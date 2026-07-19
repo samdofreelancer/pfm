@@ -11,130 +11,29 @@ on:
       - main
 
 jobs:
-  build-and-test:
-    runs-on: ubuntu-latest
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Set up JDK 17
-        uses: actions/setup-java@v4
-        with:
-          java-version: '17'
-          distribution: 'temurin'
-          cache: 'maven'
-      
-      - name: Cache Maven packages
-        uses: actions/cache@v4
-        with:
-          path: ~/.m2
-          key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
-          restore-keys: ${{ runner.os }}-m2
-      
-      - name: Build and test backend
-        run: |
-          cd backend
-          mvn -B clean verify
-      
-      - name: Set up Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: '20'
-          cache: 'npm'
-          cache-dependency-path: frontend/package-lock.json
-      
-      - name: Build frontend
-        run: |
-          cd frontend
-          npm ci
-          npm run build
-      
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
-      
-      - name: Build Docker images
-        run: |
-          docker compose build
-          docker compose --profile e2e build
-      
-      - name: Upload test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: test-results
-          path: |
-            backend/**/target/surefire-reports/
-            backend/**/target/failsafe-reports/
-      
-      - name: Export Docker images
-        if: success()
-        run: |
-          docker save pfm_backend pfm_frontend pfm_e2e -o /tmp/docker-images.tar
-      
-      - name: Upload Docker images
-        if: success()
-        uses: actions/upload-artifact@v4
-        with:
-          name: docker-images
-          path: /tmp/docker-images.tar
-          if-no-files-found: ignore
+  # ------------------------------------------------
+  # 1. Build: compile, test, package Docker images
+  # ------------------------------------------------
+  build:
+    name: Build & Test
+    uses: ./.github/workflows/reusable-build.yml
+    with:
+      java-version: '17'
+      node-version: '20'
+      build-backend: true
+      build-frontend: true
+      build-docker: true
+      upload-test-results: true
+      upload-docker-images: true
 
+  # ------------------------------------------------
+  # 2. E2E Tests: run Playwright against Docker stack
+  # ------------------------------------------------
   e2e-tests:
-    runs-on: ubuntu-latest
-    needs: build-and-test
+    name: E2E Tests
+    uses: ./.github/workflows/reusable-e2e.yml
+    needs: [build]
     if: success()
-    
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-      
-      - name: Download Docker images
-        uses: actions/download-artifact@v4
-        with:
-          name: docker-images
-          path: /tmp
-      
-      - name: Load Docker images
-        run: |
-          docker load -i /tmp/docker-images.tar
-      
-      - name: Start services
-        run: |
-          docker compose up -d
-      
-      - name: Wait for services to be ready
-        run: |
-          echo "Waiting for backend to be ready..."
-          timeout 120 bash -c 'until curl -f http://localhost:8080/; do sleep 5; done' || exit 1
-          echo "Waiting for frontend to be ready..."
-          timeout 60 bash -c 'until curl -f http://localhost:3000/; do sleep 5; done' || exit 1
-      
-      - name: Run E2E tests
-        run: |
-          docker compose --profile e2e run --rm e2e
-        env:
-          CI: 1
-      
-      - name: Stop services
-        if: always()
-        run: |
-          docker compose down --remove-orphans
-      
-      - name: Upload E2E test results
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-test-results
-          path: |
-            e2e/test-results/
-            e2e/playwright-report/
-          if-no-files-found: ignore
-      
-      - name: Upload E2E HTML report
-        if: always()
-        uses: actions/upload-artifact@v4
-        with:
-          name: e2e-html-report
-          path: e2e/playwright-report/
-          if-no-files-found: ignore
+    with:
+      docker-artifact-name: ${{ needs.build.outputs.docker-artifact-name }}
+      e2e-service-name: e2e

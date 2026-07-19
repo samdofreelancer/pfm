@@ -1,0 +1,113 @@
+name: Reusable Build Workflow
+
+on:
+  workflow_call:
+    inputs:
+      java-version:
+        description: 'JDK version'
+        required: false
+        type: string
+        default: '17'
+      node-version:
+        description: 'Node.js version'
+        required: false
+        type: string
+        default: '20'
+      build-backend:
+        description: 'Whether to build the backend'
+        required: false
+        type: boolean
+        default: true
+      build-frontend:
+        description: 'Whether to build the frontend'
+        required: false
+        type: boolean
+        default: true
+      build-docker:
+        description: 'Whether to build Docker images'
+        required: false
+        type: boolean
+        default: true
+      upload-test-results:
+        description: 'Whether to upload test results'
+        required: false
+        type: boolean
+        default: true
+      upload-docker-images:
+        description: 'Whether to upload Docker images as artifact'
+        required: false
+        type: boolean
+        default: true
+    outputs:
+      docker-artifact-name:
+        description: 'Name of the Docker images artifact'
+        value: ${{ jobs.build.outputs.docker-artifact-name }}
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    outputs:
+      docker-artifact-name: ${{ steps.set-artifact-name.outputs.artifact-name }}
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set artifact name
+        id: set-artifact-name
+        run: echo "artifact-name=docker-images-${{ github.sha }}" >> "$GITHUB_OUTPUT"
+
+      # --- Backend ---
+      - name: Setup Java & Maven
+        if: inputs.build-backend
+        uses: ./.github/actions/setup-java
+        with:
+          java-version: ${{ inputs.java-version }}
+
+      - name: Build and test backend
+        if: inputs.build-backend
+        run: .github/scripts/build-backend.sh
+
+      # --- Frontend ---
+      - name: Setup Node.js
+        if: inputs.build-frontend
+        uses: ./.github/actions/setup-node
+        with:
+          node-version: ${{ inputs.node-version }}
+
+      - name: Build frontend
+        if: inputs.build-frontend
+        run: .github/scripts/build-frontend.sh
+
+      # --- Docker ---
+      - name: Set up Docker Buildx
+        if: inputs.build-docker
+        uses: docker/setup-buildx-action@v3
+
+      - name: Build Docker images
+        if: inputs.build-docker
+        run: .github/scripts/build-docker.sh
+
+      # --- Upload test results ---
+      - name: Upload test results
+        if: inputs.upload-test-results && always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-results
+          path: |
+            backend/**/target/surefire-reports/
+            backend/**/target/failsafe-reports/
+          if-no-files-found: ignore
+
+      # --- Export & upload Docker images ---
+      - name: Export Docker images
+        if: inputs.build-docker && inputs.upload-docker-images && success()
+        run: .github/scripts/export-docker.sh /tmp/docker-images
+
+      - name: Upload Docker images
+        if: inputs.build-docker && inputs.upload-docker-images && success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: ${{ steps.set-artifact-name.outputs.artifact-name }}
+          path: /tmp/docker-images/docker-images.tar
+          if-no-files-found: ignore

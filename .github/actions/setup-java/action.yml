@@ -1,0 +1,27 @@
+name: 'Setup Java & Maven'
+description: 'Sets up JDK with Maven cache'
+inputs:
+  java-version:
+    description: 'JDK version'
+    required: false
+    default: '17'
+  distribution:
+    description: 'JDK distribution'
+    required: false
+    default: 'temurin'
+runs:
+  using: 'composite'
+  steps:
+    - name: Set up JDK
+      uses: actions/setup-java@v4
+      with:
+        java-version: ${{ inputs.java-version }}
+        distribution: ${{ inputs.distribution }}
+        cache: 'maven'
+
+    - name: Cache Maven packages
+      uses: actions/cache@v4
+      with:
+        path: ~/.m2
+        key: ${{ runner.os }}-m2-${{ hashFiles('**/pom.xml') }}
+        restore-keys: ${{ runner.os }}-m2

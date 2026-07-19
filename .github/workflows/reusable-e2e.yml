@@ -1,0 +1,86 @@
+name: Reusable E2E Workflow
+
+on:
+  workflow_call:
+    inputs:
+      docker-artifact-name:
+        description: 'Name of the Docker images artifact to download'
+        required: true
+        type: string
+      e2e-service-name:
+        description: 'Docker Compose E2E service name'
+        required: false
+        type: string
+        default: 'e2e'
+      backend-url:
+        description: 'Backend health check URL'
+        required: false
+        type: string
+        default: 'http://localhost:8080/'
+      frontend-url:
+        description: 'Frontend health check URL'
+        required: false
+        type: string
+        default: 'http://localhost:3000/'
+      backend-timeout:
+        description: 'Backend health check timeout in seconds'
+        required: false
+        type: number
+        default: 120
+      frontend-timeout:
+        description: 'Frontend health check timeout in seconds'
+        required: false
+        type: number
+        default: 60
+
+jobs:
+  e2e:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: ${{ inputs.docker-artifact-name }}
+          path: /tmp/docker-images
+
+      - name: Load Docker images
+        run: docker load -i /tmp/docker-images/docker-images.tar
+
+      - name: Start services
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml up -d
+
+      - name: Wait for services to be ready
+        run: |
+          chmod +x .github/scripts/wait-for-services.sh
+          .github/scripts/wait-for-services.sh
+
+      - name: Run E2E tests
+        run: docker compose -f docker-compose.yml -f docker-compose.ci.yml --profile e2e run --rm ${{ inputs.e2e-service-name }}
+        env:
+          CI: 1
+
+      - name: Stop services
+        if: always()
+        run: .github/scripts/docker-teardown.sh
+
+      - name: Upload E2E test results
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-test-results
+          path: |
+            e2e/test-results/
+            e2e/playwright-report/
+          if-no-files-found: ignore
+
+      - name: Upload E2E HTML report
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: e2e-html-report
+          path: e2e/playwright-report/
+          if-no-files-found: ignore

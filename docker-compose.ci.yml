@@ -1,0 +1,14 @@
+version: '3.8'
+
+# CI override: uses pre-built artifacts (Dockerfile.ci) instead of full rebuild.
+# Must be used together with docker-compose.yml:
+#   docker compose -f docker-compose.yml -f docker-compose.ci.yml build
+
+services:
+  backend:
+    build:
+      dockerfile: Dockerfile.ci
+
+  frontend:
+    build:
+      dockerfile: Dockerfile.ci
