@@ -2,6 +2,8 @@ import React, { useEffect, useState, useCallback } from 'react';
 import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AuthPage from './components/auth/AuthPage';
 import DashboardPage from './components/dashboard/DashboardPage';
+import ProfilePage from './components/profile/ProfilePage';
+import AccountsPage from './components/accounts/AccountsPage';
 import AppLayout from './components/common/AppLayout';
 import { authApi, clearAccessToken, setAccessToken } from './services/api';
 
@@ -137,6 +139,26 @@ function App() {
           <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
             <AppLayout onLogout={handleLogout} userName={userName}>
               <PlaceholderPage title="Settings" />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/accounts"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
+            <AppLayout onLogout={handleLogout} userName={userName}>
+              <AccountsPage />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/profile"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
+            <AppLayout onLogout={handleLogout} userName={userName}>
+              <ProfilePage onLogout={handleLogout} />
             </AppLayout>
           </ProtectedRoute>
         }
