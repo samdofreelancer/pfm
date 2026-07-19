@@ -26,17 +26,33 @@ cd "$SCRIPT_DIR"
 # Parse args
 START_BACKEND=true
 START_FRONTEND=true
+START_E2E=false
+E2E_AFTER_START=false
+KEEP_E2E=false
 USE_DOCKER=false
 USE_DEVTOOLS=false
 
 while [[ "$#" -gt 0 ]]; do
     case $1 in
-        --backend-only) START_FRONTEND=false ;;
-        --frontend-only) START_BACKEND=false ;;
+        --backend-only) START_FRONTEND=false; START_E2E=false; E2E_AFTER_START=false; KEEP_E2E=false ;;
+        --frontend-only) START_BACKEND=false; START_E2E=false; E2E_AFTER_START=false; KEEP_E2E=false ;;
+        --e2e-only) START_BACKEND=false; START_FRONTEND=false; E2E_AFTER_START=true ;;
+        --e2e) E2E_AFTER_START=true ;;
+        --keep-e2e) KEEP_E2E=true ;;
         --docker) USE_DOCKER=true ;;
         --dev) USE_DEVTOOLS=true ;;
         --help)
-            echo "Usage: $0 [--backend-only | --frontend-only | --docker | --dev | --help]"
+            echo "Usage: $0 [--backend-only | --frontend-only | --e2e-only | --e2e | --keep-e2e | --docker | --dev | --help]"
+            echo ""
+            echo "Options:"
+            echo "  --backend-only  Start only the backend service"
+            echo "  --frontend-only Start only the frontend service"
+            echo "  --e2e-only      Run only the e2e tests (starts backend/frontend in Docker)"
+            echo "  --e2e           Run e2e tests after starting services (requires --docker)"
+            echo "  --keep-e2e      Keep e2e container after tests for debugging"
+            echo "  --docker        Run services in Docker containers"
+            echo "  --dev           Enable hot reload for local development"
+            echo "  --help          Show this help message"
             exit 0
             ;;
         *) echo "Unknown option: $1"; exit 1 ;;
@@ -44,18 +60,29 @@ while [[ "$#" -gt 0 ]]; do
     shift
 done
 
-# Check prereqs
+# If --e2e or --e2e-only is set, --docker is implied
+if [ "$E2E_AFTER_START" = true ] || [ "$START_E2E" = true ]; then
+    USE_DOCKER=true
+fi
+
+# Check prereqs (only for non-Docker mode)
 check_command() {
     if ! command -v "$1" &>/dev/null; then
         echo -e "${RED}✗ $1 is not installed.${NC}"
         exit 1
     fi
 }
-echo -e "${YELLOW}Checking prerequisites...${NC}"
-check_command java
-check_command mvn
-check_command node
-check_command npm
+
+# Only check java/mvn/node/npm when not using Docker
+if [ "$USE_DOCKER" = false ]; then
+    echo -e "${YELLOW}Checking prerequisites...${NC}"
+    check_command java
+    check_command mvn
+    check_command node
+    check_command npm
+fi
+
+echo -e "${YELLOW}Checking Docker...${NC}"
 check_command docker
 echo -e "${YELLOW}→ Checking Docker Compose...${NC}"
 if command -v docker-compose &>/dev/null; then
@@ -221,6 +248,39 @@ if [ "$START_FRONTEND" = true ]; then
 fi
 
 # ===========================
+# E2E
+# ===========================
+if [ "$E2E_AFTER_START" = true ]; then
+    echo ""
+    echo -e "${CYAN}══════════════════════════════════════${NC}"
+    echo -e "${CYAN}  Running E2E Tests (Docker)...       ${NC}"
+    echo -e "${CYAN}══════════════════════════════════════${NC}"
+    echo ""
+
+    echo -e "${YELLOW}→ Building and starting e2e container...${NC}"
+    # Don't use set -e for e2e tests, capture exit code instead
+    set +e
+    $DOCKER_COMPOSE --profile e2e up --build e2e
+    E2E_EXIT_CODE=$?
+    set -e
+    
+    if [ $E2E_EXIT_CODE -eq 0 ]; then
+        echo -e "${GREEN}✓ E2E tests passed!${NC}"
+    else
+        echo -e "${RED}✗ E2E tests failed!${NC}"
+    fi
+    
+    # Cleanup e2e container after tests (unless --keep-e2e is set)
+    if [ "$KEEP_E2E" = true ]; then
+        echo -e "${YELLOW}→ Keeping e2e container for debugging. Run 'docker-compose --profile e2e rm -f e2e' to clean up.${NC}"
+    else
+        echo -e "${YELLOW}→ Cleaning up e2e container...${NC}"
+        $DOCKER_COMPOSE --profile e2e rm -f e2e
+        echo -e "${GREEN}✓ E2E container cleaned up.${NC}"
+    fi
+fi
+
+# ===========================
 # SUMMARY
 # ===========================
 echo ""
@@ -235,6 +295,9 @@ fi
 if [ "$START_FRONTEND" = true ]; then
     echo -e "${GREEN}║  Frontend: http://localhost:3000     ║${NC}"
 fi
+if [ "$E2E_AFTER_START" = true ]; then
+    echo -e "${GREEN}║  E2E:      Tests completed           ║${NC}"
+fi
 echo -e "${GREEN}╚══════════════════════════════════════╝${NC}"
 echo ""
 if [ "$USE_DEVTOOLS" = true ]; then
@@ -243,7 +306,9 @@ if [ "$USE_DEVTOOLS" = true ]; then
     echo -e "${YELLOW}   • Frontend: Vite HMR (instant browser updates)${NC}"
     echo ""
 fi
-echo -e "${YELLOW}Press Ctrl+C to stop all services.${NC}"
+if [ "$E2E_AFTER_START" = false ]; then
+    echo -e "${YELLOW}Press Ctrl+C to stop all services.${NC}"
+fi
 
 cleanup() {
     echo ""

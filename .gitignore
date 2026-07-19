@@ -9,3 +9,5 @@
 /backend/pfm-api/target
 /backend/pfm-infrastructure/target
 /backend/pfm-infrastructure/target
+/backend/.idea
+/e2e/node_modules

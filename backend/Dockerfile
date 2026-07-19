@@ -28,6 +28,9 @@ RUN mvn clean package -DskipTests -pl pfm-bootstrap -am
 FROM eclipse-temurin:17-jre-alpine
 WORKDIR /app
 
+# Install curl for healthcheck
+RUN apk add --no-cache curl
+
 # Copy the built jar
 COPY --from=builder /app/pfm-bootstrap/target/*.jar app.jar
 
