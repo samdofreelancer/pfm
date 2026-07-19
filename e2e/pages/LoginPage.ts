@@ -32,6 +32,8 @@ export class LoginPage {
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
     await this.submitButton.click();
+    // Wait for navigation to complete - either to dashboard (success) or stay on login (error)
+    await this.page.waitForLoadState('networkidle', { timeout: 10000 });
   }
 
   async register(fullName: string, email: string, password: string) {
@@ -41,7 +43,10 @@ export class LoginPage {
     await this.fullNameInput.fill(fullName);
     await this.emailInput.fill(email);
     await this.passwordInput.fill(password);
+    // Click submit and wait for navigation
     await this.submitButton.click();
+    // Wait for navigation to complete - either to dashboard (success) or stay on login (error)
+    await this.page.waitForLoadState('networkidle', { timeout: 10000 });
   }
 
   async getErrorMessage() {
