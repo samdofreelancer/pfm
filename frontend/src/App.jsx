@@ -1,55 +1,9 @@
-import React, { useEffect, useState } from 'react';
-import { Routes, Route, Navigate, useNavigate, useLocation } from 'react-router-dom';
+import React, { useEffect, useState, useCallback } from 'react';
+import { Routes, Route, Navigate, useLocation } from 'react-router-dom';
 import AuthPage from './components/auth/AuthPage';
+import DashboardPage from './components/dashboard/DashboardPage';
+import AppLayout from './components/common/AppLayout';
 import { authApi, clearAccessToken, setAccessToken } from './services/api';
-
-const Dashboard = ({ onLogout }) => {
-  const navigate = useNavigate();
-
-  const handleLogout = async () => {
-      try {
-        // debug log: user initiated logout
-        // eslint-disable-next-line no-console
-        console.log('[app] logout: calling authApi.logout()');
-
-        await authApi.logout();
-
-        // eslint-disable-next-line no-console
-        console.log('[app] logout: logout API success');
-
-        clearAccessToken();
-        // inform parent app that user is logged out
-        try {
-          onLogout?.();
-        } catch (e) {}
-        navigate('/login');
-      } catch (err) {
-        // eslint-disable-next-line no-console
-        console.log('[app] logout: logout API failed', err);
-        // still clear local token and redirect
-        clearAccessToken();
-        try {
-          onLogout?.();
-        } catch (e) {}
-        navigate('/login');
-      }
-  };
-
-  return (
-    <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-      <div className="text-center">
-        <h1 className="text-3xl font-bold text-gray-900 mb-4">Dashboard</h1>
-        <p className="text-gray-500">Welcome to PFM! You are logged in.</p>
-        <button
-          onClick={handleLogout}
-          className="mt-6 text-primary-600 hover:text-primary-700 font-medium"
-        >
-          Logout
-        </button>
-      </div>
-    </div>
-  );
-};
 
 const ProtectedRoute = ({ children, isLoading, isAuthenticated }) => {
   if (isLoading) {
@@ -121,7 +75,9 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
-            <Dashboard onLogout={() => setIsAuthenticated(false)} />
+            <AppLayout onLogout={() => setIsAuthenticated(false)}>
+              <DashboardPage />
+            </AppLayout>
           </ProtectedRoute>
         }
       />
