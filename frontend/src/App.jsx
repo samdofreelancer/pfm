@@ -5,6 +5,14 @@ import DashboardPage from './components/dashboard/DashboardPage';
 import AppLayout from './components/common/AppLayout';
 import { authApi, clearAccessToken, setAccessToken } from './services/api';
 
+const PlaceholderPage = ({ title, children }) => (
+  <div className="p-4 lg:p-6">
+    <h1 className="text-2xl font-bold text-gray-900 mb-4">{title}</h1>
+    <p className="text-gray-500">Coming soon...</p>
+    {children}
+  </div>
+);
+
 const ProtectedRoute = ({ children, isLoading, isAuthenticated }) => {
   if (isLoading) {
     return (
@@ -24,6 +32,7 @@ const ProtectedRoute = ({ children, isLoading, isAuthenticated }) => {
 function App() {
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [userName, setUserName] = useState('');
 
   const location = useLocation();
 
@@ -36,6 +45,7 @@ function App() {
       try {
         const response = await authApi.refresh();
         setAccessToken(response.data.accessToken);
+        setUserName(response.data.user?.fullName || '');
         setIsAuthenticated(true);
       } catch {
         clearAccessToken();
@@ -59,6 +69,16 @@ function App() {
     }
   }, []); // run once on mount
 
+  const handleLoginSuccess = useCallback((userData) => {
+    setUserName(userData?.fullName || '');
+    setIsAuthenticated(true);
+  }, []);
+
+  const handleLogout = useCallback(() => {
+    setUserName('');
+    setIsAuthenticated(false);
+  }, []);
+
   return (
     <Routes>
       <Route
@@ -67,7 +87,7 @@ function App() {
           isAuthenticated ? (
             <Navigate to="/dashboard" replace />
           ) : (
-            <AuthPage onLoginSuccess={() => setIsAuthenticated(true)} />
+            <AuthPage onLoginSuccess={handleLoginSuccess} />
           )
         }
       />
@@ -75,14 +95,54 @@ function App() {
         path="/dashboard"
         element={
           <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
-            <AppLayout onLogout={() => setIsAuthenticated(false)}>
+            <AppLayout onLogout={handleLogout} userName={userName}>
               <DashboardPage />
             </AppLayout>
           </ProtectedRoute>
         }
       />
+      <Route
+        path="/transactions"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
+            <AppLayout onLogout={handleLogout} userName={userName}>
+              <PlaceholderPage title="Transactions" />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/budgets"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
+            <AppLayout onLogout={handleLogout} userName={userName}>
+              <PlaceholderPage title="Budgets" />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/goals"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
+            <AppLayout onLogout={handleLogout} userName={userName}>
+              <PlaceholderPage title="Goals" />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
+      <Route
+        path="/settings"
+        element={
+          <ProtectedRoute isAuthenticated={isAuthenticated} isLoading={isLoading}>
+            <AppLayout onLogout={handleLogout} userName={userName}>
+              <PlaceholderPage title="Settings" />
+            </AppLayout>
+          </ProtectedRoute>
+        }
+      />
       <Route path="/" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
-      <Route path="*" element={<Navigate to="/login" replace />} />
+      <Route path="*" element={<Navigate to={isAuthenticated ? '/dashboard' : '/login'} replace />} />
     </Routes>
   );
 }

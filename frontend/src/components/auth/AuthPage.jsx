@@ -60,9 +60,9 @@ const AuthPage = ({ onLoginSuccess }) => {
             fullName: formData.fullName,
           });
 
-      const { accessToken } = response.data;
+      const { accessToken, user } = response.data;
       setAccessToken(accessToken);
-      onLoginSuccess?.();
+      onLoginSuccess?.(user);
 
       navigate('/dashboard');
     } catch (err) {
