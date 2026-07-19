@@ -50,6 +50,13 @@ jobs:
           npm ci
           npm run build
       
+      - name: Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+      
+      - name: Build Docker images
+        run: |
+          docker compose build
+      
       - name: Upload test results
         if: always()
         uses: actions/upload-artifact@v4
@@ -58,6 +65,19 @@ jobs:
           path: |
             backend/**/target/surefire-reports/
             backend/**/target/failsafe-reports/
+      
+      - name: Export Docker images
+        if: success()
+        run: |
+          docker save pfm_backend pfm_frontend pfm_e2e -o /tmp/docker-images.tar
+      
+      - name: Upload Docker images
+        if: success()
+        uses: actions/upload-artifact@v4
+        with:
+          name: docker-images
+          path: /tmp/docker-images.tar
+          if-no-files-found: ignore
 
   e2e-tests:
     runs-on: ubuntu-latest
@@ -68,12 +88,19 @@ jobs:
       - name: Checkout code
         uses: actions/checkout@v4
       
-      - name: Set up Docker Buildx
-        uses: docker/setup-buildx-action@v3
+      - name: Download Docker images
+        uses: actions/download-artifact@v4
+        with:
+          name: docker-images
+          path: /tmp
+      
+      - name: Load Docker images
+        run: |
+          docker load -i /tmp/docker-images.tar
       
       - name: Start services
         run: |
-          docker compose up -d --build
+          docker compose up -d
       
       - name: Wait for services to be ready
         run: |
