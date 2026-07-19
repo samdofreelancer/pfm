@@ -78,6 +78,11 @@ public class AuthUser {
         this.updatedAt = LocalDateTime.now();
     }
 
+    public void updateFullName(String fullName) {
+        this.fullName = fullName;
+        this.updatedAt = LocalDateTime.now();
+    }
+
     public boolean isActive() {
         return deletedAt == null;
     }

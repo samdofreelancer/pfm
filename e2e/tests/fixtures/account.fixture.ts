@@ -1,7 +1,6 @@
 import { test as base, expect } from '@playwright/test';
 import { LoginPage } from '../../pages/LoginPage';
 import { DashboardPage } from '../../pages/DashboardPage';
-import { ProfilePage } from '../../pages/ProfilePage';
 import { AccountsPage } from '../../pages/AccountsPage';
 
 type TestUser = {
@@ -10,10 +9,9 @@ type TestUser = {
   password: string;
 };
 
-type TestFixtures = {
+type AccountFixtures = {
   loginPage: LoginPage;
   dashboardPage: DashboardPage;
-  profilePage: ProfilePage;
   accountsPage: AccountsPage;
   testUser: TestUser;
 };
@@ -33,7 +31,7 @@ const getApiBaseUrl = () => {
   return process.env.CI ? 'http://backend:8080' : 'http://localhost:8080';
 };
 
-export const test = base.extend<TestFixtures>({
+export const test = base.extend<AccountFixtures>({
   loginPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
     await use(loginPage);
@@ -42,10 +40,6 @@ export const test = base.extend<TestFixtures>({
     const dashboardPage = new DashboardPage(page);
     await use(dashboardPage);
   },
-  profilePage: async ({ page }, use) => {
-    const profilePage = new ProfilePage(page);
-    await use(profilePage);
-  },
   accountsPage: async ({ page }, use) => {
     const accountsPage = new AccountsPage(page);
     await use(accountsPage);
@@ -53,7 +47,12 @@ export const test = base.extend<TestFixtures>({
   testUser: async ({ request }, use) => {
     const testUser = generateTestUser();
     await use(testUser);
-    // Cleanup: delete the test user after the test
+    // Cleanup: delete accounts first, then delete the test user
+    try {
+      await request.delete(`${getApiBaseUrl()}/api/v1/accounts/cleanup?email=${testUser.email}`);
+    } catch (e) {
+      // Ignore cleanup errors
+    }
     try {
       await request.delete(`${getApiBaseUrl()}/api/v1/auth/users`, {
         data: { email: testUser.email },

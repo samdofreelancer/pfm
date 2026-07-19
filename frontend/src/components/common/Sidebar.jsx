@@ -8,6 +8,7 @@ import {
   Settings,
   X,
   Wallet,
+  User,
 } from 'lucide-react';
 
 const navItems = [
@@ -15,6 +16,8 @@ const navItems = [
   { to: '/transactions', icon: ArrowRightLeft, label: 'Transactions' },
   { to: '/budgets', icon: PiggyBank, label: 'Budgets' },
   { to: '/goals', icon: Target, label: 'Goals' },
+  { to: '/accounts', icon: Wallet, label: 'Accounts' },
+  { to: '/profile', icon: User, label: 'Profile' },
   { to: '/settings', icon: Settings, label: 'Settings' },
 ];
 

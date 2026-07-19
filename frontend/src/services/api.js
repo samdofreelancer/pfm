@@ -130,7 +130,16 @@ export const authApi = {
     } catch (e) {}
     return api.post('/auth/logout', {}, { withCredentials: true, headers });
   },
+  getProfile: () => api.get('/auth/profile', { withCredentials: true }),
+  updateProfile: (data) => api.put('/auth/profile', data, { withCredentials: true }),
+  changePassword: (data) => api.post('/auth/change-password', data, { withCredentials: true }),
   deleteUser: (email) => api.delete('/auth/users', { data: { email }, withCredentials: true }),
+};
+
+export const accountApi = {
+  createAccount: (data) => api.post('/accounts', data, { withCredentials: true }),
+  getAccounts: (userId) => api.get(`/accounts?userId=${userId}`, { withCredentials: true }),
+  deleteAccount: (id, userId) => api.delete(`/accounts/${id}?userId=${userId}`, { withCredentials: true }),
 };
 
 export default api;

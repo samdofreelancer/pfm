@@ -1,6 +1,7 @@
 package com.pfm.application.auth.mapper;
 
 import com.pfm.application.auth.dto.AuthResponse;
+import com.pfm.application.auth.dto.ProfileResponse;
 import com.pfm.domain.auth.model.AuthUser;
 import org.springframework.stereotype.Component;
 
@@ -23,5 +24,15 @@ public class AuthMapper {
         }
 
         return builder.build();
+    }
+
+    public ProfileResponse toProfileResponse(AuthUser authUser) {
+        return ProfileResponse.builder()
+            .id(authUser.getId().getValue().toString())
+            .email(authUser.getEmail().getValue())
+            .fullName(authUser.getFullName())
+            .avatarUrl(authUser.getAvatarUrl())
+            .emailVerified(authUser.isEmailVerified())
+            .build();
     }
 }
