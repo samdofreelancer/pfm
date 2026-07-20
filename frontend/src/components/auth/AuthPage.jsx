@@ -60,9 +60,9 @@ const AuthPage = ({ onLoginSuccess }) => {
             fullName: formData.fullName,
           });
 
-      const { accessToken } = response.data;
+      const { accessToken, user } = response.data;
       setAccessToken(accessToken);
-      onLoginSuccess?.();
+      onLoginSuccess?.(user);
 
       navigate('/dashboard');
     } catch (err) {
@@ -145,10 +145,11 @@ const AuthPage = ({ onLoginSuccess }) => {
             </p>
           </div>
 
-          {/* Tabs */}
+{/* Tabs */}
           <div className="flex bg-gray-100 rounded-lg p-1 mb-8">
             <button
               onClick={() => { setIsLogin(true); setError(''); }}
+              data-testid="login-tab"
               className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
                 isLogin
                   ? 'bg-white text-gray-900 shadow-sm'
@@ -159,6 +160,7 @@ const AuthPage = ({ onLoginSuccess }) => {
             </button>
             <button
               onClick={() => { setIsLogin(false); setError(''); }}
+              data-testid="register-tab"
               className={`flex-1 py-2.5 text-sm font-medium rounded-md transition-all duration-200 ${
                 !isLogin
                   ? 'bg-white text-gray-900 shadow-sm'
@@ -181,6 +183,7 @@ const AuthPage = ({ onLoginSuccess }) => {
                   <input
                     type="text"
                     name="fullName"
+                    data-testid="fullName-input"
                     value={formData.fullName}
                     onChange={handleChange}
                     placeholder="John Doe"
@@ -199,6 +202,7 @@ const AuthPage = ({ onLoginSuccess }) => {
                 <input
                   type="email"
                   name="email"
+                  data-testid="email-input"
                   value={formData.email}
                   onChange={handleChange}
                   placeholder="you@example.com"
@@ -216,6 +220,7 @@ const AuthPage = ({ onLoginSuccess }) => {
                 <input
                   type={showPassword ? 'text' : 'password'}
                   name="password"
+                  data-testid="password-input"
                   value={formData.password}
                   onChange={handleChange}
                   placeholder={isLogin ? 'Enter your password' : 'At least 6 characters'}
@@ -243,7 +248,7 @@ const AuthPage = ({ onLoginSuccess }) => {
             )}
 
             {error && (
-              <div className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
+              <div data-testid="error-message" className="bg-red-50 border border-red-200 text-red-600 px-4 py-3 rounded-lg text-sm">
                 {error}
               </div>
             )}
@@ -251,6 +256,7 @@ const AuthPage = ({ onLoginSuccess }) => {
             <button
               type="submit"
               disabled={isLoading}
+              data-testid="submit-button"
               className="btn-primary flex items-center justify-center gap-2"
             >
               {isLoading ? (

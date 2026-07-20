@@ -1,0 +1,21 @@
+# Maven
+target/
+!.m2
+
+# IDE
+.idea/
+.vscode/
+*.swp
+*.swo
+
+# Git
+.git/
+.gitignore
+
+# OS files
+.DS_Store
+Thumbs.db
+
+# Test
+**/__pycache__/
+*.log

@@ -4,10 +4,11 @@ import com.pfm.application.auth.command.RegisterCommand;
 import com.pfm.application.auth.dto.AuthResponse;
 import com.pfm.application.auth.mapper.AuthMapper;
 import com.pfm.common.exception.BusinessException;
-import com.pfm.domain.user.model.Email;
-import com.pfm.domain.user.model.User;
-import com.pfm.domain.user.repository.UserRepository;
-import com.pfm.domain.user.service.UserDomainService;
+import com.pfm.domain.auth.model.Email;
+import com.pfm.domain.auth.model.AuthUser;
+import com.pfm.domain.auth.model.AuthUserId;
+import com.pfm.domain.auth.repository.AuthRepository;
+import com.pfm.domain.auth.service.AuthDomainService;
 import org.junit.jupiter.api.BeforeEach;
 import org.junit.jupiter.api.Test;
 import org.junit.jupiter.api.extension.ExtendWith;
@@ -16,6 +17,8 @@ import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+import java.time.LocalDateTime;
+import java.util.Optional;
 import java.util.UUID;
 
 import static org.junit.jupiter.api.Assertions.*;
@@ -27,10 +30,10 @@ import static org.mockito.Mockito.*;
 class RegisterHandlerTest {
 
     @Mock
-    private UserRepository userRepository;
+    private AuthRepository authRepository;
 
     @Mock
-    private UserDomainService userDomainService;
+    private AuthDomainService authDomainService;
 
     @Mock
     private PasswordEncoder passwordEncoder;
@@ -59,26 +62,24 @@ class RegisterHandlerTest {
     void handle_ShouldRegisterUser_WhenValidCommand() {
         // Arrange
         String encodedPassword = "encodedPassword";
-        UUID userId = UUID.randomUUID();
+        String userId = UUID.randomUUID().toString();
         Email email = new Email(command.getEmail());
 
-        User user = User.create(email, encodedPassword, command.getFullName());
-        User savedUser = User.restore(
-            new com.pfm.domain.user.model.UserId(userId),
-            email,
+        AuthUser authUser = AuthUser.create(email.getValue(), encodedPassword);
+        AuthUser savedAuthUser = AuthUser.restore(
+            AuthUserId.from(userId),
+            email.getValue(),
             encodedPassword,
-            command.getFullName(),
-            null,
             false,
-            java.time.LocalDateTime.now(),
-            java.time.LocalDateTime.now(),
+            LocalDateTime.now(),
+            LocalDateTime.now(),
             null
         );
 
         when(passwordEncoder.encode(command.getPassword())).thenReturn(encodedPassword);
-        when(userRepository.save(any(User.class))).thenReturn(savedUser);
-        when(tokenService.generateAccessToken(savedUser)).thenReturn("accessToken");
-        when(tokenService.generateRefreshToken(savedUser)).thenReturn("refreshToken");
+        when(authRepository.save(any(AuthUser.class))).thenReturn(savedAuthUser);
+        when(tokenService.generateAccessToken(savedAuthUser)).thenReturn("accessToken");
+        when(tokenService.generateRefreshToken(savedAuthUser)).thenReturn("refreshToken");
         when(tokenService.getAccessTokenExpirationMs()).thenReturn(900000L);
 
         AuthResponse expectedResponse = AuthResponse.builder()
@@ -87,7 +88,7 @@ class RegisterHandlerTest {
             .expiresIn(900000L)
             .build();
 
-        when(authMapper.toAuthResponseWithTokens(savedUser, "accessToken", "refreshToken", 900000L))
+        when(authMapper.toAuthResponseWithTokens(savedAuthUser, "accessToken", "refreshToken", 900000L))
             .thenReturn(expectedResponse);
 
         // Act
@@ -99,24 +100,24 @@ class RegisterHandlerTest {
         assertEquals("refreshToken", response.getRefreshToken());
         assertEquals(900000L, response.getExpiresIn());
 
-        verify(userDomainService).assertEmailNotExists(any(Email.class));
+        verify(authDomainService).assertEmailNotExists(any(Email.class));
         verify(passwordEncoder).encode(command.getPassword());
-        verify(userRepository).save(any(User.class));
-        verify(tokenService).generateAccessToken(savedUser);
-        verify(tokenService).generateRefreshToken(savedUser);
-        verify(authMapper).toAuthResponseWithTokens(savedUser, "accessToken", "refreshToken", 900000L);
+        verify(authRepository).save(any(AuthUser.class));
+        verify(tokenService).generateAccessToken(savedAuthUser);
+        verify(tokenService).generateRefreshToken(savedAuthUser);
+        verify(authMapper).toAuthResponseWithTokens(savedAuthUser, "accessToken", "refreshToken", 900000L);
     }
 
     @Test
     void handle_ShouldThrowException_WhenEmailAlreadyExists() {
         // Arrange
         doThrow(new BusinessException("Email already exists", "EMAIL_EXISTS", 409))
-            .when(userDomainService).assertEmailNotExists(any(Email.class));
+            .when(authDomainService).assertEmailNotExists(any(Email.class));
 
         // Act & Assert
         assertThrows(BusinessException.class, () -> registerHandler.handle(command));
 
-        verify(userRepository, never()).save(any());
+        verify(authRepository, never()).save(any());
         verify(tokenService, never()).generateAccessToken(any());
     }
 
@@ -126,8 +127,8 @@ class RegisterHandlerTest {
         String encodedPassword = "encodedPassword";
         when(passwordEncoder.encode(command.getPassword())).thenReturn(encodedPassword);
 
-        User user = User.create(new Email(command.getEmail()), encodedPassword, command.getFullName());
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        AuthUser authUser = AuthUser.create(command.getEmail(), encodedPassword);
+        when(authRepository.save(any(AuthUser.class))).thenReturn(authUser);
         when(tokenService.generateAccessToken(any())).thenReturn("accessToken");
         when(tokenService.generateRefreshToken(any())).thenReturn("refreshToken");
         when(tokenService.getAccessTokenExpirationMs()).thenReturn(900000L);
@@ -140,7 +141,7 @@ class RegisterHandlerTest {
 
         // Assert
         verify(passwordEncoder).encode(command.getPassword());
-        verify(userRepository).save(argThat(savedUser ->
+        verify(authRepository).save(argThat(savedUser ->
             savedUser.getPassword().equals(encodedPassword)
         ));
     }
@@ -151,8 +152,8 @@ class RegisterHandlerTest {
         String encodedPassword = "encodedPassword";
         when(passwordEncoder.encode(command.getPassword())).thenReturn(encodedPassword);
 
-        User user = User.create(new Email(command.getEmail()), encodedPassword, command.getFullName());
-        when(userRepository.save(any(User.class))).thenReturn(user);
+        AuthUser authUser = AuthUser.create(command.getEmail(), encodedPassword);
+        when(authRepository.save(any(AuthUser.class))).thenReturn(authUser);
         when(tokenService.generateAccessToken(any())).thenReturn("accessToken");
         when(tokenService.generateRefreshToken(any())).thenReturn("refreshToken");
         when(tokenService.getAccessTokenExpirationMs()).thenReturn(900000L);
@@ -164,9 +165,9 @@ class RegisterHandlerTest {
         registerHandler.handle(command);
 
         // Assert
-        verify(userRepository).save(argThat(savedUser -> {
-            assertEquals(command.getFullName(), savedUser.getFullName());
+        verify(authRepository).save(argThat(savedUser -> {
             assertEquals(command.getEmail(), savedUser.getEmail().getValue());
+            assertEquals(command.getFullName(), savedUser.getFullName());
             assertFalse(savedUser.isEmailVerified());
             assertNotNull(savedUser.getCreatedAt());
             assertNotNull(savedUser.getUpdatedAt());

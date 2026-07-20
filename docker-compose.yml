@@ -37,6 +37,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile
+    image: pfm_backend
     container_name: pfm-backend
     ports:
       - "8080:8080"
@@ -52,21 +53,51 @@ services:
       test: ["CMD", "curl", "-f", "http://localhost:8080/"]
       interval: 10s
       timeout: 5s
-      retries: 5
-      start_period: 30s
+      retries: 10
+      start_period: 60s
     restart: unless-stopped
 
   frontend:
     build:
       context: ./frontend
       dockerfile: Dockerfile
+    image: pfm_frontend
     container_name: pfm-frontend
     ports:
       - "3000:3000"
     depends_on:
       backend:
-        condition: service_healthy
+        condition: service_started
+    healthcheck:
+      test: ["CMD", "curl", "-f", "http://localhost:3000"]
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 10s
     restart: unless-stopped
+
+  e2e:
+    build:
+      context: ./e2e
+      dockerfile: Dockerfile
+    image: pfm_e2e
+    container_name: pfm-e2e
+    environment:
+      - CI=1
+    depends_on:
+      backend:
+        condition: service_healthy
+      frontend:
+        condition: service_healthy
+    command: npm test
+    restart: "no"
+    # Only start e2e when explicitly requested (e.g., in CI)
+    profiles:
+      - e2e
+    # Mount volumes for test results and reports
+    volumes:
+      - ./e2e/test-results:/app/test-results
+      - ./e2e/playwright-report:/app/playwright-report
 
 volumes:
   pgdata:

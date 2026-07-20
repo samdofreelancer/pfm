@@ -5,8 +5,8 @@ import com.pfm.application.auth.dto.AuthResponse;
 import com.pfm.application.auth.mapper.AuthMapper;
 import com.pfm.application.common.CommandHandler;
 import com.pfm.common.exception.BusinessException;
-import com.pfm.domain.user.model.Email;
-import com.pfm.domain.user.repository.UserRepository;
+import com.pfm.domain.auth.model.AuthUser;
+import com.pfm.domain.auth.repository.AuthRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
@@ -16,7 +16,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class RefreshTokenHandler implements CommandHandler<RefreshTokenCommand, AuthResponse> {
 
     private final TokenService tokenService;
-    private final UserRepository userRepository;
+    private final AuthRepository authRepository;
     private final AuthMapper authMapper;
 
     @Override
@@ -27,13 +27,12 @@ public class RefreshTokenHandler implements CommandHandler<RefreshTokenCommand, 
         }
 
         String emailValue = tokenService.getEmailFromToken(command.getRefreshToken());
-        Email email = new Email(emailValue);
-        return userRepository.findByEmail(email)
-            .map(user -> {
-                String newAccessToken = tokenService.generateAccessToken(user);
-                String newRefreshToken = tokenService.generateRefreshToken(user);
+        return authRepository.findByEmail(emailValue)
+            .map(authUser -> {
+                String newAccessToken = tokenService.generateAccessToken(authUser);
+                String newRefreshToken = tokenService.generateRefreshToken(authUser);
                 long expiresIn = tokenService.getAccessTokenExpirationMs();
-                return authMapper.toAuthResponseWithTokens(user, newAccessToken, newRefreshToken, expiresIn);
+                return authMapper.toAuthResponseWithTokens(authUser, newAccessToken, newRefreshToken, expiresIn);
             })
             .orElseThrow(() -> new BusinessException("USER_NOT_FOUND", "User not found for refresh token", 404));
     }

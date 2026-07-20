@@ -1,7 +1,7 @@
 package com.pfm.infrastructure.security.service;
 
-import com.pfm.domain.user.model.Email;
-import com.pfm.domain.user.repository.UserRepository;
+import com.pfm.domain.auth.model.AuthUser;
+import com.pfm.domain.auth.repository.AuthRepository;
 import lombok.RequiredArgsConstructor;
 import org.springframework.security.core.userdetails.User;
 import org.springframework.security.core.userdetails.UserDetails;
@@ -16,16 +16,16 @@ import java.util.Collections;
 @RequiredArgsConstructor
 public class UserDetailsServiceImpl implements UserDetailsService {
 
-    private final UserRepository userRepository;
+    private final AuthRepository authRepository;
 
     @Override
     @Transactional(readOnly = true)
     public UserDetails loadUserByUsername(String email) throws UsernameNotFoundException {
-        return userRepository.findByEmail(new Email(email))
-            .map(user -> new User(
-                user.getEmail().getValue(),
-                user.getPassword(),
-                user.isActive(),
+        return authRepository.findByEmail(email)
+            .map(authUser -> new User(
+                authUser.getEmail().getValue(),
+                authUser.getPassword(),
+                authUser.isActive(),
                 true, true, true,
                 Collections.emptyList()
             ))

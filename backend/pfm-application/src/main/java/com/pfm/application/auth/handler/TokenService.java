@@ -1,10 +1,10 @@
 package com.pfm.application.auth.handler;
 
-import com.pfm.domain.user.model.User;
+import com.pfm.domain.auth.model.AuthUser;
 
 public interface TokenService {
-    String generateAccessToken(User user);
-    String generateRefreshToken(User user);
+    String generateAccessToken(AuthUser authUser);
+    String generateRefreshToken(AuthUser authUser);
     long getAccessTokenExpirationMs();
     long getRefreshTokenExpirationMs();
     String getEmailFromToken(String token);
