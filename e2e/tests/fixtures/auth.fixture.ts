@@ -28,11 +28,6 @@ const generateTestUser = (): TestUser => {
   };
 };
 
-// Get API base URL based on environment
-const getApiBaseUrl = () => {
-  return process.env.CI ? 'http://backend:8080' : 'http://localhost:8080';
-};
-
 export const test = base.extend<TestFixtures>({
   loginPage: async ({ page }, use) => {
     const loginPage = new LoginPage(page);
@@ -50,17 +45,9 @@ export const test = base.extend<TestFixtures>({
     const accountsPage = new AccountsPage(page);
     await use(accountsPage);
   },
-  testUser: async ({ request }, use) => {
+  testUser: async ({}, use) => {
     const testUser = generateTestUser();
     await use(testUser);
-    // Cleanup: delete the test user after the test
-    try {
-      await request.delete(`${getApiBaseUrl()}/api/v1/auth/users`, {
-        data: { email: testUser.email },
-      });
-    } catch (e) {
-      // Ignore cleanup errors
-    }
   },
 });
 

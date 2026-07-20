@@ -11,9 +11,6 @@ import java.math.BigDecimal;
 
 @Data
 public class CreateAccountRequest {
-    @NotBlank(message = "User ID is required")
-    private String userId;
-
     @NotNull(message = "Account type is required")
     private AccountType type;
 

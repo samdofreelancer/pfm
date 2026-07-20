@@ -1,7 +1,6 @@
 package com.pfm.api.controller;
 
 import com.pfm.api.dto.request.ChangePasswordRequest;
-import com.pfm.api.dto.request.DeleteUserRequest;
 import com.pfm.api.dto.request.LoginRequest;
 import com.pfm.api.dto.request.RegisterRequest;
 import com.pfm.api.dto.request.UpdateProfileRequest;
@@ -146,12 +145,8 @@ public class AuthController {
     }
 
     @DeleteMapping("/users")
-    public ResponseEntity<Void> deleteUser(@Valid @RequestBody DeleteUserRequest request) {
-        DeleteUserCommand command = DeleteUserCommand.builder()
-            .email(request.getEmail())
-            .build();
-
-        deleteUserHandler.handle(command);
+    public ResponseEntity<Void> deleteUser() {
+        deleteUserHandler.handle(new DeleteUserCommand());
         return ResponseEntity.noContent().build();
     }
 

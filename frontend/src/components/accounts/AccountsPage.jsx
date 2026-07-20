@@ -22,9 +22,7 @@ const AccountsPage = () => {
 
   const loadAccounts = async () => {
     try {
-      // TODO: Get actual user ID from auth context
-      const userId = 'demo-user-id';
-      const response = await accountApi.getAccounts(userId);
+      const response = await accountApi.getAccounts();
       setAccounts(response.data);
     } catch (err) {
       setError('Failed to load accounts');
@@ -42,8 +40,7 @@ const AccountsPage = () => {
     setSuccess('');
 
     try {
-      const userId = 'demo-user-id';
-      await accountApi.deleteAccount(accountId, userId);
+      await accountApi.deleteAccount(accountId);
       setSuccess('Account deleted successfully');
       loadAccounts();
     } catch (err) {
@@ -57,11 +54,8 @@ const AccountsPage = () => {
     setSuccess('');
 
     try {
-      // TODO: Get actual user ID from auth context
-      const userId = 'demo-user-id';
       await accountApi.createAccount({
         ...formData,
-        userId,
         initialBalance: parseFloat(formData.initialBalance),
       });
       setSuccess('Account created successfully');

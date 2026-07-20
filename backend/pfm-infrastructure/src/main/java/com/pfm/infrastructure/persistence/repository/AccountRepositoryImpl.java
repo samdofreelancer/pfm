@@ -37,8 +37,8 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public List<Account> findByUserId(AccountOwnerId userId) {
-        return jpaRepository.findByUserId(userId.getValue()).stream()
+    public List<Account> findActiveByUserId(AccountOwnerId userId) {
+        return jpaRepository.findByUserIdAndIsActiveTrue(userId.getValue()).stream()
                 .map(mapper::toDomain)
                 .toList();
     }

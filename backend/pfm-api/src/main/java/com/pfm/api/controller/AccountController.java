@@ -1,8 +1,6 @@
 package com.pfm.api.controller;
 
 import com.pfm.api.dto.request.CreateAccountRequest;
-import com.pfm.application.account.command.CleanupAccountsByEmailCommand;
-import com.pfm.application.account.command.CleanupAccountsByEmailHandler;
 import com.pfm.application.account.command.CreateAccountCommand;
 import com.pfm.application.account.command.CreateAccountHandler;
 import com.pfm.application.account.command.DeleteAccountCommand;
@@ -24,14 +22,12 @@ public class AccountController {
 
     private final CreateAccountHandler createAccountHandler;
     private final DeleteAccountHandler deleteAccountHandler;
-    private final CleanupAccountsByEmailHandler cleanupAccountsByEmailHandler;
     private final GetAccountsHandler getAccountsHandler;
     private final AccountMapper accountMapper;
 
     @PostMapping
     public ResponseEntity<Void> createAccount(@Valid @RequestBody CreateAccountRequest request) {
         CreateAccountCommand command = new CreateAccountCommand(
-            request.getUserId(),
             request.getType(),
             request.getName(),
             request.getDescription(),
@@ -44,9 +40,8 @@ public class AccountController {
     }
 
     @GetMapping
-    public ResponseEntity<List<AccountMapper.AccountResponse>> getAccounts(@RequestParam String userId) {
-        // TODO: Get userId from authenticated user instead of request param
-        List<AccountMapper.AccountResponse> accounts = getAccountsHandler.handle(new com.pfm.application.account.query.GetAccountsQuery(userId))
+    public ResponseEntity<List<AccountMapper.AccountResponse>> getAccounts() {
+        List<AccountMapper.AccountResponse> accounts = getAccountsHandler.handle(new com.pfm.application.account.query.GetAccountsQuery())
             .stream()
             .map(accountMapper::toResponse)
             .toList();
@@ -54,14 +49,8 @@ public class AccountController {
     }
 
     @DeleteMapping("/{id}")
-    public ResponseEntity<Void> deleteAccount(@PathVariable String id, @RequestParam String userId) {
-        deleteAccountHandler.handle(new DeleteAccountCommand(id, userId));
-        return ResponseEntity.noContent().build();
-    }
-
-    @DeleteMapping("/cleanup")
-    public ResponseEntity<Void> cleanupAccountsByEmail(@RequestParam String email) {
-        cleanupAccountsByEmailHandler.handle(new CleanupAccountsByEmailCommand(email));
+    public ResponseEntity<Void> deleteAccount(@PathVariable String id) {
+        deleteAccountHandler.handle(new DeleteAccountCommand(id));
         return ResponseEntity.noContent().build();
     }
 }

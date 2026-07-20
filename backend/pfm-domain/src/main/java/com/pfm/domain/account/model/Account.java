@@ -3,7 +3,6 @@ package com.pfm.domain.account.model;
 import com.pfm.domain.shared.event.DomainEvent;
 import lombok.Getter;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.Collections;
@@ -16,8 +15,7 @@ public class Account {
     private AccountType type;
     private String name;
     private String description;
-    private BigDecimal balance;
-    private String currency;
+    private Money balance;
     private boolean isActive;
     private LocalDateTime createdAt;
     private LocalDateTime updatedAt;
@@ -26,30 +24,28 @@ public class Account {
     private final List<DomainEvent> domainEvents = new ArrayList<>();
 
     private Account(AccountId id, AccountOwnerId userId, AccountType type, String name, String description,
-                    BigDecimal balance, String currency) {
+                    Money balance) {
         this.id = id;
         this.userId = userId;
-        this.type = type;
+        this.type = validateType(type);
         this.name = validateName(name);
         this.description = description;
         this.balance = validateBalance(balance);
-        this.currency = validateCurrency(currency);
         this.isActive = true;
         this.createdAt = LocalDateTime.now();
         this.updatedAt = LocalDateTime.now();
     }
 
     public static Account create(AccountOwnerId userId, AccountType type, String name, String description,
-                                 BigDecimal balance, String currency) {
+                                 Money balance) {
         AccountId accountId = AccountId.generate();
-        Account account = new Account(accountId, userId, type, name, description, balance, currency);
-        return account;
+        return new Account(accountId, userId, type, name, description, balance);
     }
 
     public static Account restore(AccountId id, AccountOwnerId userId, AccountType type, String name, String description,
-                                  BigDecimal balance, String currency, boolean isActive,
+                                  Money balance, boolean isActive,
                                   LocalDateTime createdAt, LocalDateTime updatedAt, LocalDateTime deletedAt) {
-        Account account = new Account(id, userId, type, name, description, balance, currency);
+        Account account = new Account(id, userId, type, name, description, balance);
         account.isActive = isActive;
         account.createdAt = createdAt;
         account.updatedAt = updatedAt;
@@ -60,31 +56,28 @@ public class Account {
     public void update(String name, String description, AccountType type) {
         this.name = validateName(name);
         this.description = description;
-        if (type == null) {
-            throw new IllegalArgumentException("Account type must not be null");
-        }
-        this.type = type;
+        this.type = validateType(type);
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void updateBalance(BigDecimal newBalance) {
+    public void updateBalance(Money newBalance) {
         this.balance = validateBalance(newBalance);
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void deposit(BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+    public void deposit(Money amount) {
+        if (!amount.isPositive()) {
             throw new IllegalArgumentException("Deposit amount must be positive");
         }
         this.balance = this.balance.add(amount);
         this.updatedAt = LocalDateTime.now();
     }
 
-    public void withdraw(BigDecimal amount) {
-        if (amount.compareTo(BigDecimal.ZERO) <= 0) {
+    public void withdraw(Money amount) {
+        if (!amount.isPositive()) {
             throw new IllegalArgumentException("Withdrawal amount must be positive");
         }
-        if (this.balance.compareTo(amount) < 0) {
+        if (this.balance.isLessThan(amount)) {
             throw new IllegalArgumentException("Insufficient balance");
         }
         this.balance = this.balance.subtract(amount);
@@ -111,6 +104,10 @@ public class Account {
         domainEvents.clear();
     }
 
+    public String getCurrency() {
+        return balance.getCurrency();
+    }
+
     private static String validateName(String name) {
         if (name == null || name.isBlank()) {
             throw new IllegalArgumentException("Account name must not be blank");
@@ -118,17 +115,20 @@ public class Account {
         return name.trim();
     }
 
-    private static BigDecimal validateBalance(BigDecimal balance) {
+    private static AccountType validateType(AccountType type) {
+        if (type == null) {
+            throw new IllegalArgumentException("Account type must not be null");
+        }
+        return type;
+    }
+
+    private static Money validateBalance(Money balance) {
         if (balance == null) {
             throw new IllegalArgumentException("Account balance must not be null");
         }
-        return balance;
-    }
-
-    private static String validateCurrency(String currency) {
-        if (currency == null || currency.isBlank()) {
-            throw new IllegalArgumentException("Currency must not be blank");
+        if (balance.isNegative()) {
+            throw new IllegalArgumentException("Account balance must not be negative");
         }
-        return currency.trim().toUpperCase();
+        return balance;
     }
 }

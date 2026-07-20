@@ -12,7 +12,7 @@ public interface AccountRepository {
 
     Optional<Account> findById(AccountId id);
 
-    List<Account> findByUserId(AccountOwnerId userId);
+    List<Account> findActiveByUserId(AccountOwnerId userId);
 
     void delete(AccountId id);
 

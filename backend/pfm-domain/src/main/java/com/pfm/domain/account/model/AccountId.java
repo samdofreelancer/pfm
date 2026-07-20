@@ -9,6 +9,9 @@ public class AccountId {
     String value;
 
     private AccountId(String value) {
+        if (value == null || value.isBlank()) {
+            throw new IllegalArgumentException("Account id must not be blank");
+        }
         this.value = value;
     }
 

@@ -1,4 +1,4 @@
 package com.pfm.application.account.query;
 
-public record GetAccountsQuery(String userId) {
+public record GetAccountsQuery() {
 }
