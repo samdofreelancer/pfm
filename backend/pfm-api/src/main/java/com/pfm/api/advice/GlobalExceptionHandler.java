@@ -2,6 +2,7 @@ package com.pfm.api.advice;
 
 import com.pfm.common.dto.ErrorResponse;
 import com.pfm.common.exception.BusinessException;
+import com.pfm.domain.shared.exception.DomainException;
 import jakarta.servlet.http.HttpServletRequest;
 import lombok.extern.slf4j.Slf4j;
 import org.springframework.http.HttpStatus;
@@ -30,6 +31,26 @@ public class GlobalExceptionHandler {
             .path(request.getRequestURI())
             .build();
         return ResponseEntity.status(ex.getStatus()).body(response);
+    }
+
+    @ExceptionHandler(DomainException.class)
+    public ResponseEntity<ErrorResponse> handleDomainException(DomainException ex, HttpServletRequest request) {
+        HttpStatus status = switch (ex.getCode()) {
+            case "EMAIL_EXISTS" -> HttpStatus.CONFLICT;
+            case "USER_DISABLED" -> HttpStatus.FORBIDDEN;
+            case "INVALID_EMAIL" -> HttpStatus.BAD_REQUEST;
+            default -> HttpStatus.BAD_REQUEST;
+        };
+
+        log.warn("Domain exception: {} - {}", ex.getCode(), ex.getMessage());
+        ErrorResponse response = ErrorResponse.builder()
+            .status(status.value())
+            .code(ex.getCode())
+            .message(ex.getMessage())
+            .timestamp(LocalDateTime.now())
+            .path(request.getRequestURI())
+            .build();
+        return ResponseEntity.status(status).body(response);
     }
 
     @ExceptionHandler(MethodArgumentNotValidException.class)

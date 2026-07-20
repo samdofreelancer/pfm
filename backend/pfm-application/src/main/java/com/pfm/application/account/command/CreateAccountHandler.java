@@ -2,6 +2,7 @@ package com.pfm.application.account.command;
 
 import com.pfm.domain.account.model.Account;
 import com.pfm.domain.account.model.AccountId;
+import com.pfm.domain.account.model.AccountOwnerId;
 import com.pfm.domain.account.model.AccountType;
 import com.pfm.domain.account.repository.AccountRepository;
 import org.springframework.stereotype.Service;
@@ -17,7 +18,7 @@ public class CreateAccountHandler {
     }
 
     public AccountId handle(CreateAccountCommand command) {
-        AccountId userId = AccountId.from(command.userId());
+        AccountOwnerId userId = AccountOwnerId.from(command.userId());
         Account account = Account.create(
             userId,
             command.type(),

@@ -1,15 +1,14 @@
 package com.pfm.api.controller;
 
 import com.pfm.api.dto.request.CreateAccountRequest;
+import com.pfm.application.account.command.CleanupAccountsByEmailCommand;
+import com.pfm.application.account.command.CleanupAccountsByEmailHandler;
 import com.pfm.application.account.command.CreateAccountCommand;
 import com.pfm.application.account.command.CreateAccountHandler;
 import com.pfm.application.account.command.DeleteAccountCommand;
 import com.pfm.application.account.command.DeleteAccountHandler;
 import com.pfm.application.account.mapper.AccountMapper;
 import com.pfm.application.account.query.GetAccountsHandler;
-import com.pfm.domain.account.model.AccountId;
-import com.pfm.domain.account.repository.AccountRepository;
-import com.pfm.domain.auth.repository.AuthRepository;
 import jakarta.validation.Valid;
 import lombok.RequiredArgsConstructor;
 import org.springframework.http.HttpStatus;
@@ -25,10 +24,9 @@ public class AccountController {
 
     private final CreateAccountHandler createAccountHandler;
     private final DeleteAccountHandler deleteAccountHandler;
+    private final CleanupAccountsByEmailHandler cleanupAccountsByEmailHandler;
     private final GetAccountsHandler getAccountsHandler;
     private final AccountMapper accountMapper;
-    private final AccountRepository accountRepository;
-    private final AuthRepository authRepository;
 
     @PostMapping
     public ResponseEntity<Void> createAccount(@Valid @RequestBody CreateAccountRequest request) {
@@ -63,13 +61,7 @@ public class AccountController {
 
     @DeleteMapping("/cleanup")
     public ResponseEntity<Void> cleanupAccountsByEmail(@RequestParam String email) {
-        var authUser = authRepository.findByEmail(email);
-        if (authUser.isPresent()) {
-            var accounts = accountRepository.findByUserId(AccountId.from(authUser.get().getId().getValue().toString()));
-            for (var account : accounts) {
-                accountRepository.delete(account.getId());
-            }
-        }
+        cleanupAccountsByEmailHandler.handle(new CleanupAccountsByEmailCommand(email));
         return ResponseEntity.noContent().build();
     }
 }

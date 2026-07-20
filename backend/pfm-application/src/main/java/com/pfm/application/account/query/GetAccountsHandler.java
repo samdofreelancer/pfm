@@ -1,7 +1,7 @@
 package com.pfm.application.account.query;
 
 import com.pfm.domain.account.model.Account;
-import com.pfm.domain.account.model.AccountId;
+import com.pfm.domain.account.model.AccountOwnerId;
 import com.pfm.domain.account.repository.AccountRepository;
 import org.springframework.stereotype.Service;
 
@@ -16,7 +16,7 @@ public class GetAccountsHandler {
     }
 
     public List<Account> handle(GetAccountsQuery query) {
-        AccountId userId = AccountId.from(query.userId());
+        AccountOwnerId userId = AccountOwnerId.from(query.userId());
         return accountRepository.findByUserId(userId);
     }
 }

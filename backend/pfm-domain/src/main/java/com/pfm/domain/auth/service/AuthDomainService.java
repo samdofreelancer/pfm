@@ -1,9 +1,9 @@
 package com.pfm.domain.auth.service;
 
-import com.pfm.common.exception.BusinessException;
 import com.pfm.domain.auth.model.Email;
 import com.pfm.domain.auth.model.AuthUser;
 import com.pfm.domain.auth.repository.AuthRepository;
+import com.pfm.domain.shared.exception.DomainException;
 import lombok.RequiredArgsConstructor;
 
 import java.util.regex.Pattern;
@@ -18,19 +18,19 @@ public class AuthDomainService {
 
     public void assertEmailNotExists(Email email) {
         if (authRepository.existsByEmail(email.getValue())) {
-            throw new BusinessException("EMAIL_EXISTS", "Email already registered", 409);
+            throw new DomainException("EMAIL_EXISTS", "Email already registered");
         }
     }
 
     public void assertUserIsActive(AuthUser authUser) {
         if (!authUser.isActive()) {
-            throw new BusinessException("USER_DISABLED", "User account is disabled", 403);
+            throw new DomainException("USER_DISABLED", "User account is disabled");
         }
     }
 
     public void validateEmailFormat(Email email) {
         if (!EMAIL_PATTERN.matcher(email.getValue()).matches()) {
-            throw new BusinessException("INVALID_EMAIL", "Invalid email format", 400);
+            throw new DomainException("INVALID_EMAIL", "Invalid email format");
         }
     }
 }

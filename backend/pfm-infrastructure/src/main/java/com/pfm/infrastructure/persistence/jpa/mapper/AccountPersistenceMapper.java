@@ -2,6 +2,7 @@ package com.pfm.infrastructure.persistence.jpa.mapper;
 
 import com.pfm.domain.account.model.Account;
 import com.pfm.domain.account.model.AccountId;
+import com.pfm.domain.account.model.AccountOwnerId;
 import com.pfm.domain.account.model.AccountType;
 import com.pfm.infrastructure.persistence.jpa.entity.JpaAccountEntity;
 import org.springframework.stereotype.Component;
@@ -30,7 +31,7 @@ public class AccountPersistenceMapper {
     public Account toDomain(JpaAccountEntity entity) {
         return Account.restore(
                 AccountId.from(entity.getId()),
-                AccountId.from(entity.getUserId()),
+                AccountOwnerId.from(entity.getUserId()),
                 entity.getType(),
                 entity.getName(),
                 entity.getDescription(),
