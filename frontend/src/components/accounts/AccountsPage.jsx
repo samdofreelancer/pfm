@@ -1,11 +1,24 @@
 import React, { useState, useEffect } from 'react';
+import { useLocation } from 'react-router-dom';
 import { accountApi } from '../../services/api';
 
 const AccountsPage = () => {
+  const location = useLocation();
   const [accounts, setAccounts] = useState([]);
   const [loading, setLoading] = useState(true);
-  const [error, setError] = useState('');
-  const [success, setSuccess] = useState('');
+  const [message, setMessage] = useState(null); // { type: 'success'|'warning'|'error', text: '...' }
+
+  // Auto-dismiss message after 3.5 seconds
+  useEffect(() => {
+    if (!message) return;
+    const timer = setTimeout(() => setMessage(null), 3500);
+    return () => clearTimeout(timer);
+  }, [message]);
+
+  // Reload data when navigating to this page
+  useEffect(() => {
+    loadAccounts();
+  }, [location.pathname]);
 
   const [showForm, setShowForm] = useState(false);
   const [formData, setFormData] = useState({
@@ -16,19 +29,19 @@ const AccountsPage = () => {
     currency: 'VND',
   });
 
-  useEffect(() => {
-    loadAccounts();
-  }, []);
-
   const loadAccounts = async () => {
     try {
       const response = await accountApi.getAccounts();
       setAccounts(response.data);
     } catch (err) {
-      setError('Failed to load accounts');
+      showMessage('error', 'Failed to load accounts');
     } finally {
       setLoading(false);
     }
+  };
+
+  const showMessage = (type, text) => {
+    setMessage({ type, text });
   };
 
   const handleDeleteAccount = async (accountId) => {
@@ -36,29 +49,24 @@ const AccountsPage = () => {
       return;
     }
 
-    setError('');
-    setSuccess('');
-
     try {
       await accountApi.deleteAccount(accountId);
-      setSuccess('Account deleted successfully');
+      showMessage('warning', 'Account deleted successfully');
       loadAccounts();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to delete account');
+      showMessage('error', err.response?.data?.message || 'Failed to delete account');
     }
   };
 
   const handleCreateAccount = async (e) => {
     e.preventDefault();
-    setError('');
-    setSuccess('');
 
     try {
       await accountApi.createAccount({
         ...formData,
         initialBalance: parseFloat(formData.initialBalance),
       });
-      setSuccess('Account created successfully');
+      showMessage('success', 'Account created successfully');
       setShowForm(false);
       setFormData({
         type: 'CASH',
@@ -69,7 +77,7 @@ const AccountsPage = () => {
       });
       loadAccounts();
     } catch (err) {
-      setError(err.response?.data?.message || 'Failed to create account');
+      showMessage('error', err.response?.data?.message || 'Failed to create account');
     }
   };
 
@@ -108,15 +116,34 @@ const AccountsPage = () => {
         </button>
       </div>
 
-      {error && (
-        <div className="bg-red-50 border border-red-200 text-red-700 px-4 py-3 rounded-lg" data-testid="error-message">
-          {error}
-        </div>
-      )}
-
-      {success && (
-        <div className="bg-green-50 border border-green-200 text-green-700 px-4 py-3 rounded-lg" data-testid="success-message">
-          {success}
+      {/* Message toast */}
+      {message && (
+        <div
+          data-testid={message.type === 'error' ? 'error-message' : 'success-message'}
+          className={`px-4 py-3 rounded-lg border shadow-sm transition-all duration-300 ${
+            message.type === 'error'
+              ? 'bg-red-50 border-red-200 text-red-700'
+              : message.type === 'warning'
+                ? 'bg-orange-50 border-orange-200 text-orange-700'
+                : 'bg-green-50 border-green-200 text-green-700'
+          }`}
+        >
+          <div className="flex items-center gap-2">
+            {message.type === 'error' ? (
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 8v4m0 4h.01M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            ) : message.type === 'warning' ? (
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 9v2m0 4h.01m-6.938 4h13.856c1.54 0 2.502-1.667 1.732-2.5L13.732 4.5c-.77-.833-2.694-.833-3.464 0L3.34 16.5c-.77.833.192 2.5 1.732 2.5z" />
+              </svg>
+            ) : (
+              <svg className="w-4 h-4 shrink-0" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M9 12l2 2 4-4m6 2a9 9 0 11-18 0 9 9 0 0118 0z" />
+              </svg>
+            )}
+            {message.text}
+          </div>
         </div>
       )}
 
