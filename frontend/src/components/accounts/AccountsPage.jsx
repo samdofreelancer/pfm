@@ -83,11 +83,11 @@ const AccountsPage = () => {
 
   const getAccountTypeLabel = (type) => {
     const labels = {
-      CASH: 'Tiền mặt',
-      BANK_ACCOUNT: 'Tài khoản ngân hàng',
-      CREDIT_CARD: 'Thẻ tín dụng',
-      DEBIT_CARD: 'Thẻ ghi nợ',
-      E_WALLET: 'Ví điện tử',
+      CASH: 'Cash',
+      BANK_ACCOUNT: 'Bank Account',
+      CREDIT_CARD: 'Credit Card',
+      DEBIT_CARD: 'Debit Card',
+      E_WALLET: 'E-Wallet',
     };
     return labels[type] || type;
   };
@@ -193,11 +193,11 @@ const AccountsPage = () => {
                   data-testid="account-type-select"
                   className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:outline-none focus:ring-2 focus:ring-primary-500 focus:border-primary-500"
                 >
-                  <option value="CASH">Tiền mặt</option>
-                  <option value="BANK_ACCOUNT">Tài khoản ngân hàng</option>
-                  <option value="CREDIT_CARD">Thẻ tín dụng</option>
-                  <option value="DEBIT_CARD">Thẻ ghi nợ</option>
-                  <option value="E_WALLET">Ví điện tử</option>
+                  <option value="CASH">Cash</option>
+                  <option value="BANK_ACCOUNT">Bank Account</option>
+                  <option value="CREDIT_CARD">Credit Card</option>
+                  <option value="DEBIT_CARD">Debit Card</option>
+                  <option value="E_WALLET">E-Wallet</option>
                 </select>
               </div>
 
