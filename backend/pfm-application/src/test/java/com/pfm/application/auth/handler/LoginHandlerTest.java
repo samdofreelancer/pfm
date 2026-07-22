@@ -14,7 +14,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -32,7 +31,7 @@ class LoginHandlerTest {
     private AuthRepository authRepository;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordHasher passwordHasher;
 
     @Mock
     private AuthMapper authMapper;
@@ -72,7 +71,7 @@ class LoginHandlerTest {
     void handle_ShouldLoginUser_WhenValidCredentials() {
         // Arrange
         when(authRepository.findByEmail(anyString())).thenReturn(Optional.of(authUser));
-        when(passwordEncoder.matches(command.getPassword(), authUser.getPassword())).thenReturn(true);
+        when(passwordHasher.matches(command.getPassword(), authUser.getPassword())).thenReturn(true);
         when(tokenService.generateAccessToken(authUser)).thenReturn("accessToken");
         when(tokenService.generateRefreshToken(authUser)).thenReturn("refreshToken");
         when(tokenService.getAccessTokenExpirationMs()).thenReturn(900000L);
@@ -96,7 +95,7 @@ class LoginHandlerTest {
         assertEquals(900000L, response.getExpiresIn());
 
         verify(authRepository).findByEmail(anyString());
-        verify(passwordEncoder).matches(command.getPassword(), authUser.getPassword());
+        verify(passwordHasher).matches(command.getPassword(), authUser.getPassword());
         verify(tokenService).generateAccessToken(authUser);
         verify(tokenService).generateRefreshToken(authUser);
         verify(authMapper).toAuthResponseWithTokens(authUser, "accessToken", "refreshToken", 900000L);
@@ -117,7 +116,7 @@ class LoginHandlerTest {
         assertEquals(401, exception.getStatus());
 
         verify(authRepository).findByEmail(anyString());
-        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(passwordHasher, never()).matches(anyString(), anyString());
         verify(tokenService, never()).generateAccessToken(any());
     }
 
@@ -125,7 +124,7 @@ class LoginHandlerTest {
     void handle_ShouldThrowException_WhenPasswordIsInvalid() {
         // Arrange
         when(authRepository.findByEmail(anyString())).thenReturn(Optional.of(authUser));
-        when(passwordEncoder.matches(command.getPassword(), authUser.getPassword())).thenReturn(false);
+        when(passwordHasher.matches(command.getPassword(), authUser.getPassword())).thenReturn(false);
 
         // Act & Assert
         BusinessException exception = assertThrows(BusinessException.class, () -> {
@@ -137,7 +136,7 @@ class LoginHandlerTest {
         assertEquals(401, exception.getStatus());
 
         verify(authRepository).findByEmail(anyString());
-        verify(passwordEncoder).matches(command.getPassword(), authUser.getPassword());
+        verify(passwordHasher).matches(command.getPassword(), authUser.getPassword());
         verify(tokenService, never()).generateAccessToken(any());
     }
 
@@ -165,7 +164,7 @@ class LoginHandlerTest {
         assertEquals("User account is disabled", exception.getMessage());
         assertEquals(403, exception.getStatus());
 
-        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(passwordHasher, never()).matches(anyString(), anyString());
         verify(tokenService, never()).generateAccessToken(any());
     }
 
@@ -177,7 +176,7 @@ class LoginHandlerTest {
         long expiresIn = 900000L;
 
         when(authRepository.findByEmail(anyString())).thenReturn(Optional.of(authUser));
-        when(passwordEncoder.matches(command.getPassword(), authUser.getPassword())).thenReturn(true);
+        when(passwordHasher.matches(command.getPassword(), authUser.getPassword())).thenReturn(true);
         when(tokenService.generateAccessToken(authUser)).thenReturn(accessToken);
         when(tokenService.generateRefreshToken(authUser)).thenReturn(refreshToken);
         when(tokenService.getAccessTokenExpirationMs()).thenReturn(expiresIn);
@@ -202,6 +201,6 @@ class LoginHandlerTest {
         // Act & Assert
         assertThrows(BusinessException.class, () -> loginHandler.handle(command));
 
-        verify(passwordEncoder, never()).matches(anyString(), anyString());
+        verify(passwordHasher, never()).matches(anyString(), anyString());
     }
 }

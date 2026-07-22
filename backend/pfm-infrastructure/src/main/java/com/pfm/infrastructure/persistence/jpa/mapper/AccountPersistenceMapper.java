@@ -2,11 +2,10 @@ package com.pfm.infrastructure.persistence.jpa.mapper;
 
 import com.pfm.domain.account.model.Account;
 import com.pfm.domain.account.model.AccountId;
-import com.pfm.domain.account.model.AccountType;
+import com.pfm.domain.account.model.AccountOwnerId;
+import com.pfm.domain.account.model.Money;
 import com.pfm.infrastructure.persistence.jpa.entity.JpaAccountEntity;
 import org.springframework.stereotype.Component;
-
-import java.math.BigDecimal;
 
 @Component
 public class AccountPersistenceMapper {
@@ -18,7 +17,7 @@ public class AccountPersistenceMapper {
                 .type(account.getType())
                 .name(account.getName())
                 .description(account.getDescription())
-                .balance(account.getBalance())
+                .balance(account.getBalance().getAmount())
                 .currency(account.getCurrency())
                 .isActive(account.isActive())
                 .createdAt(account.getCreatedAt())
@@ -30,12 +29,11 @@ public class AccountPersistenceMapper {
     public Account toDomain(JpaAccountEntity entity) {
         return Account.restore(
                 AccountId.from(entity.getId()),
-                AccountId.from(entity.getUserId()),
+                AccountOwnerId.from(entity.getUserId()),
                 entity.getType(),
                 entity.getName(),
                 entity.getDescription(),
-                entity.getBalance(),
-                entity.getCurrency(),
+                Money.of(entity.getBalance(), entity.getCurrency()),
                 entity.isActive(),
                 entity.getCreatedAt(),
                 entity.getUpdatedAt(),

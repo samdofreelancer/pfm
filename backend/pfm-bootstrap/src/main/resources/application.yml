@@ -3,7 +3,7 @@ spring:
     name: personal-finance-manager
 
   datasource:
-    url: jdbc:postgresql://localhost:5432/pfm?TimeZone=Asia/Ho_Chi_Minh&ApplicationName=pfm
+    url: jdbc:postgresql://localhost:5433/pfm?TimeZone=Asia/Ho_Chi_Minh&ApplicationName=pfm
     username: pfm_user
     password: pfm_password
     driver-class-name: org.postgresql.Driver

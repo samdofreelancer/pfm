@@ -6,8 +6,6 @@ import com.pfm.common.exception.BusinessException;
 import com.pfm.domain.auth.model.AuthUser;
 import com.pfm.domain.auth.repository.AuthRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.core.context.SecurityContextHolder;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -16,20 +14,21 @@ import org.springframework.transaction.annotation.Transactional;
 public class ChangePasswordHandler implements CommandHandler<ChangePasswordCommand, Void> {
 
     private final AuthRepository authRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
+    private final CurrentUserProvider currentUserProvider;
 
     @Override
     @Transactional
     public Void handle(ChangePasswordCommand command) {
-        String userEmail = SecurityContextHolder.getContext().getAuthentication().getName();
+        String userEmail = currentUserProvider.currentUserEmail();
         AuthUser authUser = authRepository.findByEmail(userEmail)
             .orElseThrow(() -> new BusinessException("USER_NOT_FOUND", "User not found", 404));
 
-        if (!passwordEncoder.matches(command.getCurrentPassword(), authUser.getPassword())) {
+        if (!passwordHasher.matches(command.getCurrentPassword(), authUser.getPassword())) {
             throw new BusinessException("INVALID_CREDENTIALS", "Current password is incorrect", 400);
         }
 
-        String encodedNewPassword = passwordEncoder.encode(command.getNewPassword());
+        String encodedNewPassword = passwordHasher.hash(command.getNewPassword());
         authUser.updatePassword(encodedNewPassword);
         authRepository.save(authUser);
 

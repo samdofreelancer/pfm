@@ -4,7 +4,6 @@ export class DashboardPage {
   readonly page: Page;
   readonly heading: Locator;
   readonly welcomeText: Locator;
-  readonly logoutButton: Locator;
   readonly userAvatar: Locator;
   readonly userName: Locator;
 
@@ -19,6 +18,12 @@ export class DashboardPage {
   readonly sidebarMobileClose: Locator;
   readonly mobileMenuButton: Locator;
 
+  // User dropdown
+  readonly userDropdownToggle: Locator;
+  readonly userDropdownMenu: Locator;
+  readonly profileMenuItem: Locator;
+  readonly logoutMenuItem: Locator;
+
   // Total balance card
   readonly totalBalanceLabel: Locator;
   readonly totalBalanceAmount: Locator;
@@ -26,13 +31,13 @@ export class DashboardPage {
   readonly expenseLabel: Locator;
 
   // Sections
-  readonly tongQuanThuChiHeading: Locator;
-  readonly lichChiTieuHeading: Locator;
-  readonly tinhHinhThuChiHeading: Locator;
-  readonly ghiChepGanDayHeading: Locator;
-  readonly taiKhoanHeading: Locator;
-  readonly thuTienHeading: Locator;
-  readonly chiTienHeading: Locator;
+  readonly incomeExpenseOverviewHeading: Locator;
+  readonly monthlySpendingCalendarHeading: Locator;
+  readonly incomeExpenseHeading: Locator;
+  readonly recentRecordsHeading: Locator;
+  readonly accountsHeading: Locator;
+  readonly incomeHeading: Locator;
+  readonly expenseHeading: Locator;
 
   constructor(page: Page) {
     this.page = page;
@@ -40,10 +45,15 @@ export class DashboardPage {
     // Main header
     this.heading = page.getByRole('heading', { name: 'Dashboard' });
     this.welcomeText = page.locator('text=Welcome back');
-    this.logoutButton = page.locator('button[title="Logout"]');
     this.userAvatar = page.locator('header .rounded-full').first();
     this.userName = page.locator('header span.font-medium');
     this.mobileMenuButton = page.locator('header button').first();
+
+    // User dropdown
+    this.userDropdownToggle = page.locator('header button').filter({ has: page.locator('.rounded-full') });
+    this.userDropdownMenu = page.locator('.absolute.right-0.mt-2');
+    this.profileMenuItem = page.getByRole('button', { name: 'Profile' });
+    this.logoutMenuItem = page.getByRole('button', { name: 'Logout' });
 
     // Sidebar
     this.sidebar = page.locator('aside');
@@ -56,19 +66,19 @@ export class DashboardPage {
     this.sidebarMobileClose = page.locator('aside button').first();
 
     // Total balance
-    this.totalBalanceLabel = page.locator('text=Tổng số dư');
+    this.totalBalanceLabel = page.locator('text=Total Balance');
     this.totalBalanceAmount = page.locator('text=18.000.000');
-    this.incomeLabel = page.locator('text=Thu:');
-    this.expenseLabel = page.locator('text=Chi:');
+    this.incomeLabel = page.locator('text=Income:');
+    this.expenseLabel = page.locator('text=Expense:');
 
     // Sections
-    this.tongQuanThuChiHeading = page.getByRole('heading', { name: 'Tổng quan thu chi' });
-    this.lichChiTieuHeading = page.getByRole('heading', { name: 'Lịch chi tiêu tháng' });
-    this.tinhHinhThuChiHeading = page.getByRole('heading', { name: 'Tình hình thu chi' });
-    this.ghiChepGanDayHeading = page.getByRole('heading', { name: 'Ghi chép gần đây' });
-    this.taiKhoanHeading = page.getByRole('heading', { name: 'Tài khoản' });
-    this.thuTienHeading = page.getByRole('heading', { name: 'Thu tiền' });
-    this.chiTienHeading = page.getByRole('heading', { name: 'Chi tiền' });
+    this.incomeExpenseOverviewHeading = page.getByRole('heading', { name: 'Income & Expense Overview', exact: true });
+    this.monthlySpendingCalendarHeading = page.getByRole('heading', { name: 'Monthly Spending Calendar', exact: true });
+    this.incomeExpenseHeading = page.getByRole('heading', { name: 'Income & Expense', exact: true });
+    this.recentRecordsHeading = page.getByRole('heading', { name: 'Recent Records', exact: true });
+    this.accountsHeading = page.getByRole('heading', { name: 'Accounts', exact: true });
+    this.incomeHeading = page.getByRole('heading', { name: 'Income', exact: true });
+    this.expenseHeading = page.getByRole('heading', { name: 'Expense', exact: true });
   }
 
   async isOnDashboard() {
@@ -85,8 +95,16 @@ export class DashboardPage {
   }
 
   async logout() {
-    await this.logoutButton.click();
+    await this.userDropdownToggle.click();
+    await this.logoutMenuItem.waitFor({ state: 'visible', timeout: 5000 });
+    await this.logoutMenuItem.click();
     await this.page.waitForLoadState('networkidle');
+  }
+
+  async openProfile() {
+    await this.userDropdownToggle.click();
+    await this.profileMenuItem.waitFor({ state: 'visible', timeout: 5000 });
+    await this.profileMenuItem.click();
   }
 
   async navigateToTransactions() {

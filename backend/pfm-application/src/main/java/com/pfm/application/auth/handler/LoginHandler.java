@@ -9,7 +9,6 @@ import com.pfm.domain.auth.model.Email;
 import com.pfm.domain.auth.model.AuthUser;
 import com.pfm.domain.auth.repository.AuthRepository;
 import lombok.RequiredArgsConstructor;
-import org.springframework.security.crypto.password.PasswordEncoder;
 import org.springframework.stereotype.Service;
 import org.springframework.transaction.annotation.Transactional;
 
@@ -18,7 +17,7 @@ import org.springframework.transaction.annotation.Transactional;
 public class LoginHandler implements CommandHandler<LoginCommand, AuthResponse> {
 
     private final AuthRepository authRepository;
-    private final PasswordEncoder passwordEncoder;
+    private final PasswordHasher passwordHasher;
     private final AuthMapper authMapper;
     private final TokenService tokenService;
 
@@ -37,7 +36,7 @@ public class LoginHandler implements CommandHandler<LoginCommand, AuthResponse> 
         }
 
         // Verify password
-        if (!passwordEncoder.matches(command.getPassword(), authUser.getPassword())) {
+        if (!passwordHasher.matches(command.getPassword(), authUser.getPassword())) {
             throw new BusinessException("INVALID_CREDENTIALS", "Invalid email or password", 401);
         }
 

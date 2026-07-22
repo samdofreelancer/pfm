@@ -133,13 +133,13 @@ export const authApi = {
   getProfile: () => api.get('/auth/profile', { withCredentials: true }),
   updateProfile: (data) => api.put('/auth/profile', data, { withCredentials: true }),
   changePassword: (data) => api.post('/auth/change-password', data, { withCredentials: true }),
-  deleteUser: (email) => api.delete('/auth/users', { data: { email }, withCredentials: true }),
+  deleteUser: () => api.delete('/auth/users', { withCredentials: true }),
 };
 
 export const accountApi = {
   createAccount: (data) => api.post('/accounts', data, { withCredentials: true }),
-  getAccounts: (userId) => api.get(`/accounts?userId=${userId}`, { withCredentials: true }),
-  deleteAccount: (id, userId) => api.delete(`/accounts/${id}?userId=${userId}`, { withCredentials: true }),
+  getAccounts: () => api.get('/accounts', { withCredentials: true }),
+  deleteAccount: (id) => api.delete(`/accounts/${id}`, { withCredentials: true }),
 };
 
 export default api;

@@ -1,0 +1,32 @@
+spring:
+  datasource:
+    url: jdbc:h2:mem:pfm_test;MODE=PostgreSQL;DATABASE_TO_UPPER=false;DB_CLOSE_DELAY=-1
+    username: sa
+    password:
+    driver-class-name: org.h2.Driver
+
+  flyway:
+    enabled: false
+
+  jpa:
+    hibernate:
+      ddl-auto: create-drop
+    properties:
+      hibernate:
+        dialect: org.hibernate.dialect.H2Dialect
+        format_sql: false
+    show-sql: false
+
+app:
+  jwt:
+    secret: AAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAAA
+    expiration-ms: 900000
+    refresh-expiration-ms: 604800000
+  cors:
+    allowed-origins: http://localhost:5173
+
+logging:
+  level:
+    com.pfm: WARN
+    org.springframework: WARN
+    org.hibernate: WARN

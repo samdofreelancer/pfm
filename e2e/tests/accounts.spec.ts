@@ -95,6 +95,9 @@ test.describe('Accounts Management', () => {
   });
 
   test('should delete an account successfully', async ({ page, accountsPage }) => {
+    // Wait for any previous success message to auto-dismiss
+    await page.waitForTimeout(4000);
+
     // First create an account to delete
     await accountsPage.createAccount({
       name: 'Account to Delete',
@@ -107,35 +110,38 @@ test.describe('Accounts Management', () => {
     // Verify account appears
     await expect(page.getByText('Account to Delete').first()).toBeVisible();
 
+    // Wait for success message to auto-dismiss (3.5s auto-dismiss timer + buffer)
+    await page.waitForTimeout(4000);
+    await expect(accountsPage.successMessage).not.toBeVisible({ timeout: 5000 });
+
     // Set up dialog handler BEFORE clicking delete
     page.once('dialog', (dialog) => {
       expect(dialog.message()).toContain('delete');
       dialog.accept();
     });
 
-    // Delete the account
+    // Click delete button
     const deleteButton = page.locator('[data-testid^="delete-account-"]').first();
     await deleteButton.click();
 
-    // Wait for the success message
+    // Wait for the success message to appear after delete
     await expect(accountsPage.successMessage).toBeVisible({ timeout: 15000 });
     const successMessage = await accountsPage.getSuccessMessage();
     expect(successMessage).toContain('Account deleted successfully');
   });
 
-  test('should toggle add account form visibility', async ({ accountsPage }) => {
+  test('should toggle add account form visibility', async ({ page, accountsPage }) => {
     // Form should be hidden initially
     await expect(accountsPage.createAccountForm).toBeHidden();
 
-    // Click Add Account
+    // Click Add Account button to open the form
     await accountsPage.clickAddAccount();
     await expect(accountsPage.createAccountForm).toBeVisible();
-    expect(await accountsPage.addAccountButton.textContent()).toContain('Cancel');
 
-    // Click Cancel to hide the form
-    await accountsPage.clickAddAccount();
+    // Close the form by clicking the Cancel button inside the modal
+    const cancelButton = page.getByRole('button', { name: 'Cancel' });
+    await cancelButton.click();
     await expect(accountsPage.createAccountForm).toBeHidden();
-    expect(await accountsPage.addAccountButton.textContent()).toContain('Add Account');
   });
 
   test('should create account with different types', async ({ page, accountsPage }) => {
@@ -155,6 +161,9 @@ test.describe('Accounts Management', () => {
   });
 
   test('should handle cancel in delete confirmation dialog', async ({ page, accountsPage }) => {
+    // Wait for any previous success message to auto-dismiss
+    await page.waitForTimeout(4000);
+
     // First create an account
     await accountsPage.createAccount({
       name: 'Test Account for Cancel',
@@ -166,6 +175,9 @@ test.describe('Accounts Management', () => {
 
     // Verify account appears
     await expect(page.getByText('Test Account for Cancel').first()).toBeVisible();
+
+    // Wait for success message to auto-dismiss
+    await page.waitForTimeout(4000);
 
     // Set up dialog handler BEFORE clicking delete
     page.once('dialog', (dialog) => {

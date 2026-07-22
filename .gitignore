@@ -11,3 +11,8 @@
 /backend/pfm-infrastructure/target
 /backend/.idea
 /e2e/node_modules
+**/.classpath
+**/.factorypath
+**/.project
+**/.settings/
+**/bin/

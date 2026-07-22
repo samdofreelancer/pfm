@@ -15,7 +15,6 @@ import org.junit.jupiter.api.extension.ExtendWith;
 import org.mockito.InjectMocks;
 import org.mockito.Mock;
 import org.mockito.junit.jupiter.MockitoExtension;
-import org.springframework.security.crypto.password.PasswordEncoder;
 
 import java.time.LocalDateTime;
 import java.util.Optional;
@@ -36,7 +35,7 @@ class RegisterHandlerTest {
     private AuthDomainService authDomainService;
 
     @Mock
-    private PasswordEncoder passwordEncoder;
+    private PasswordHasher passwordHasher;
 
     @Mock
     private AuthMapper authMapper;
@@ -76,7 +75,7 @@ class RegisterHandlerTest {
             null
         );
 
-        when(passwordEncoder.encode(command.getPassword())).thenReturn(encodedPassword);
+        when(passwordHasher.hash(command.getPassword())).thenReturn(encodedPassword);
         when(authRepository.save(any(AuthUser.class))).thenReturn(savedAuthUser);
         when(tokenService.generateAccessToken(savedAuthUser)).thenReturn("accessToken");
         when(tokenService.generateRefreshToken(savedAuthUser)).thenReturn("refreshToken");
@@ -101,7 +100,7 @@ class RegisterHandlerTest {
         assertEquals(900000L, response.getExpiresIn());
 
         verify(authDomainService).assertEmailNotExists(any(Email.class));
-        verify(passwordEncoder).encode(command.getPassword());
+        verify(passwordHasher).hash(command.getPassword());
         verify(authRepository).save(any(AuthUser.class));
         verify(tokenService).generateAccessToken(savedAuthUser);
         verify(tokenService).generateRefreshToken(savedAuthUser);
@@ -125,7 +124,7 @@ class RegisterHandlerTest {
     void handle_ShouldEncodePassword_WhenRegistering() {
         // Arrange
         String encodedPassword = "encodedPassword";
-        when(passwordEncoder.encode(command.getPassword())).thenReturn(encodedPassword);
+        when(passwordHasher.hash(command.getPassword())).thenReturn(encodedPassword);
 
         AuthUser authUser = AuthUser.create(command.getEmail(), encodedPassword);
         when(authRepository.save(any(AuthUser.class))).thenReturn(authUser);
@@ -140,7 +139,7 @@ class RegisterHandlerTest {
         registerHandler.handle(command);
 
         // Assert
-        verify(passwordEncoder).encode(command.getPassword());
+        verify(passwordHasher).hash(command.getPassword());
         verify(authRepository).save(argThat(savedUser ->
             savedUser.getPassword().equals(encodedPassword)
         ));
@@ -150,7 +149,7 @@ class RegisterHandlerTest {
     void handle_ShouldCreateUserWithCorrectData_WhenValidCommand() {
         // Arrange
         String encodedPassword = "encodedPassword";
-        when(passwordEncoder.encode(command.getPassword())).thenReturn(encodedPassword);
+        when(passwordHasher.hash(command.getPassword())).thenReturn(encodedPassword);
 
         AuthUser authUser = AuthUser.create(command.getEmail(), encodedPassword);
         when(authRepository.save(any(AuthUser.class))).thenReturn(authUser);

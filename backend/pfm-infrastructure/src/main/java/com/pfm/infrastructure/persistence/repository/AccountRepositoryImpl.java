@@ -2,6 +2,7 @@ package com.pfm.infrastructure.persistence.repository;
 
 import com.pfm.domain.account.model.Account;
 import com.pfm.domain.account.model.AccountId;
+import com.pfm.domain.account.model.AccountOwnerId;
 import com.pfm.domain.account.repository.AccountRepository;
 import com.pfm.infrastructure.persistence.jpa.entity.JpaAccountEntity;
 import com.pfm.infrastructure.persistence.jpa.mapper.AccountPersistenceMapper;
@@ -36,8 +37,8 @@ public class AccountRepositoryImpl implements AccountRepository {
     }
 
     @Override
-    public List<Account> findByUserId(AccountId userId) {
-        return jpaRepository.findByUserId(userId.getValue()).stream()
+    public List<Account> findActiveByUserId(AccountOwnerId userId) {
+        return jpaRepository.findByUserIdAndIsActiveTrue(userId.getValue()).stream()
                 .map(mapper::toDomain)
                 .toList();
     }
